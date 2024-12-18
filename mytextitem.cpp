@@ -6,8 +6,7 @@ MyTextItem::MyTextItem(QGraphicsItem *parent): QGraphicsTextItem(parent)
     m_store_str = "Text";
     setFlag(QGraphicsItem::ItemIsMovable);
     setFlag(QGraphicsItem::ItemIsSelectable);
-    setFont(QFont("Times"));
-    setDefaultTextColor(Qt::red);
+
 
     setSelected(true);
 }

@@ -178,7 +178,7 @@ void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     myItemWidget->setItemToggle("default toggle");
     myItemWidget->setItemPixmap(this->image());
 
-    myItemWidget->setWindowTitle(this->name());
+    myItemWidget->setTitleName(this->name());
 
     myItemWidget->show();
 }

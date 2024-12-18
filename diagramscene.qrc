@@ -17,5 +17,6 @@
         <file>images/underline.png</file>
         <file>images/test1.png</file>
         <file>images/test2.png</file>
+        <file>images/shadow.png</file>
     </qresource>
 </RCC>

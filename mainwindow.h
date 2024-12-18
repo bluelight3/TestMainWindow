@@ -124,6 +124,7 @@ public slots:
     void testCut();
     void testCopy();
     void testPaste();
+    void testDelete();
 
     void testShowStatus();
     void sceneScaleChanged(const QString &scale);

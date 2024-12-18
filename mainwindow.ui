@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>945</width>
-    <height>687</height>
+    <width>888</width>
+    <height>633</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>图元交互软件</string>
   </property>
   <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>945</width>
+     <width>888</width>
      <height>26</height>
     </rect>
    </property>
@@ -41,6 +41,8 @@
     <addaction name="actionCut"/>
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
+    <addaction name="separator"/>
+    <addaction name="actionDelete"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -66,6 +68,7 @@
    <addaction name="actionNew"/>
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
+   <addaction name="actionDelete"/>
   </widget>
   <action name="actionNew">
    <property name="icon">
@@ -166,8 +169,24 @@
     <string>Ctrl+D</string>
    </property>
   </action>
+  <action name="actionDelete">
+   <property name="icon">
+    <iconset resource="diagramscene.qrc">
+     <normaloff>:/images/delete.png</normaloff>:/images/delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>删除</string>
+   </property>
+   <property name="toolTip">
+    <string>删除</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
  </widget>
  <resources>
+  <include location="diagramscene.qrc"/>
   <include location="myimages.qrc"/>
  </resources>
  <connections/>

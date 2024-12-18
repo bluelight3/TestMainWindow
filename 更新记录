@@ -5,3 +5,6 @@
 // 修复自定义label拖动到view上在view上不显示对应item的bug
 // 修复在view上相应的两种label只能显示最多一个的Bug
 // 修复右键菜单只能作用于view上不能作用于Item上的Bug
+
+
+// 添加字体，并且设置字体默认颜色以及字体大小

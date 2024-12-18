@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
     myTextItem->setTextInteractionFlags(Qt::TextEditorInteraction);
     myTextItem->setZValue(1000.0);
     myTextItem->setSelected(true);
+    myTextItem->setFont(QFont("Times"));
+    myTextItem->setDefaultTextColor(Qt::red);
 
     m_myItem1_count = 1;
     m_myItem2_count = 1;
@@ -79,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_view =new MyView();
     m_scene = new QGraphicsScene();
+
+
 
     m_view->setScene(m_scene);
     m_scene->setSceneRect(QRectF(0,0,1920,1080));
@@ -106,6 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionCut,SIGNAL(triggered()),this,SLOT(testCut()));
     connect(ui->actionCopy,SIGNAL(triggered()),this,SLOT(testCopy()));
     connect(ui->actionPaste,SIGNAL(triggered()),this,SLOT(testPaste()));
+    connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
+
 
     connect(ui->actionShowStatus,SIGNAL(triggered()),this,SLOT(testShowStatus()));
 
@@ -589,6 +595,8 @@ void MainWindow::acceptInsertItem()
         newInsertItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
         newInsertItem->setTextInteractionFlags(Qt::TextEditorInteraction);
         newInsertItem->setZValue(1000.0);
+        newInsertItem->setFont(QFont("Times",24));
+        newInsertItem->setDefaultTextColor(Qt::red);
         newInsertItem->setSelected(true);
 
         m_scene->addItem(newInsertItem);
@@ -671,6 +679,12 @@ void MainWindow::testCopy()
 void MainWindow::testPaste()
 {
     pasteItem();
+}
+
+void MainWindow::testDelete()
+{
+    QGraphicsItem* selectedItem = m_scene->selectedItems().first();
+    m_scene->removeItem(selectedItem);
 }
 
 void MainWindow::testShowStatus()
