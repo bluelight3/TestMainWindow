@@ -15,4 +15,6 @@
 #include <QApplication>
 #include <QGraphicsSceneEvent>
 
+//#define SHOW_LOADWIDGET
+
 #endif // MAINWINDOW_H

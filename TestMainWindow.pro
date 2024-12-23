@@ -18,7 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     MyHelper.cpp \
     arrow.cpp \
-    diagramitem.cpp \
+    loadwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     myitem.cpp \
@@ -32,6 +32,7 @@ HEADERS += \
     arrow.h \
     diagramitem.h \
     global.h \
+    loadwidget.h \
     mainwindow.h \
     myitem.h \
     myitemidget.h \
@@ -40,6 +41,7 @@ HEADERS += \
     myview.h
 
 FORMS += \
+    loadwidget.ui \
     mainwindow.ui \
     myitemidget.ui
 
@@ -49,6 +51,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    background.qrc \
     diagramscene.qrc \
     myimages.qrc
 

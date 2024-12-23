@@ -2,9 +2,10 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "global.h"
 #include "myitem.h"
 #include "myview.h"
-#include "global.h"
+#include "mytextitem.h"
 #include <QComboBox>
 #include <QGraphicsPixmapItem>
 #include <QVector>
@@ -15,7 +16,9 @@
 #include <QLabel>
 #include "diagramitem.h"
 #include <QHoverEvent>
-#include "mytextitem.h"
+
+
+#include "loadwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -29,6 +32,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
+    // 载入画面
+    LoadWidget* m_loadWidget;
 
     MyView *m_view;
 
@@ -75,6 +81,8 @@ public:
     // 文件项目相关 (打开，保存)
     QString m_projectName;
     QString m_projectSaveName;
+
+
 
 
     void createToolBox();
@@ -126,9 +134,25 @@ public slots:
     void testPaste();
     void testDelete();
 
+    void testLeftRotate();
+    void testRightRotate();
+
+    void testToFront();
+    void testToBack();
+    void testToGroup();
+    void testGroupBreak();
+
+    void testBold();
+    void testItalic();
+    void testUnderLine();
+
+    void testUndo();
+    void testRedo();
+
+
     void testShowStatus();
     void sceneScaleChanged(const QString &scale);
 
-
+    void do_timer_timeout();
 };
 #endif // MAINWINDOW_H

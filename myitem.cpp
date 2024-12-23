@@ -13,10 +13,13 @@ MyItem::MyItem()
     m_name = "defaultName";
     myDiagramType = MyType::MyTest1;
     m_point = QPointF(0,0);
+    m_point_left = QPointF(-120,0);
+    m_point_right = QPointF(120,0);
 
     setFlag(QGraphicsItem::ItemIsFocusable  ); // 如果要用键盘控制图形项，就必须使图形项可以获得焦点，即设置该标志
     setFlag(QGraphicsItem::ItemIsMovable);     // 如果要想用鼠标控制图形项，那么必须先设置该标志
     setFlag(QGraphicsItem::ItemIsSelectable);
+
 
                                                // 其实也可以在创建图形项进行设置
     setAcceptHoverEvents(true);                // 使图形项支持鼠标悬停事件
@@ -110,6 +113,99 @@ QPointF MyItem::point() const
     return m_point;
 }
 
+
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         移除关联的连线
+* @func          removeArrow
+* @param         Arrow *arrow
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+void MyItem::removeArrow(Arrow *arrow)
+{
+    int index = arrows.indexOf(arrow);
+
+    if (index != -1)
+        arrows.removeAt(index);
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         移除所有连线
+* @func          removeArrows
+* @param         void
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+QList<Arrow *> MyItem::removeArrows()
+{
+    foreach (Arrow *arrow, arrows) {
+        arrow->startItem()->removeArrow(arrow);
+        arrow->endItem()->removeArrow(arrow);
+
+        QGraphicsItem* tmpArrow = dynamic_cast<QGraphicsItem*>(arrow);
+        if (tmpArrow)
+            scene()->removeItem(tmpArrow);
+//        emit removeItem(arrow);
+        delete arrow;
+    }
+    return arrows;
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         添加连线
+* @func          addArrow
+* @param         void
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+void MyItem::addArrow(Arrow *arrow)
+{
+    arrows.append(arrow);
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         获取连接点位置
+* @func          getLinePoint
+* @param         void
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+QPointF MyItem::getLinePoint(){
+    return m_isLeft_Right ? m_point_left : m_point_right;
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         设置确定连接点位置
+* @func          setLinePoint
+* @param         QPointF p
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+void MyItem::setLinePoint(QPointF p)
+{
+//    if( myDiagramType==GND ){
+//        isLeft_Right = true;
+//        return;
+//    }
+
+    p = mapFromScene(p);
+
+    auto len_left = (p.x()-m_point_left.x())*(p.x()-m_point_left.x())+(p.y()-m_point_left.y())*(p.y()-m_point_left.y());
+    auto len_right = (p.x()-m_point_right.x())*(p.x()-m_point_right.x())+(p.y()-m_point_right.y())*(p.y()-m_point_right.y());
+    m_isLeft_Right = len_left < len_right;
+}
+
 void MyItem::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Down)
@@ -181,6 +277,20 @@ void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     myItemWidget->setTitleName(this->name());
 
     myItemWidget->show();
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         关联图元变化,更新连线位置
+* @func          itemChange
+* @param         QGraphicsItem::GraphicsItemChange change,const QVariant &value
+* @return        void
+* @author        gl
+* @date          2024-12-23
+**********************************************/
+QVariant MyItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+{
+
 }
 
 

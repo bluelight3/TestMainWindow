@@ -6,5 +6,29 @@
         <file>images/cut.png</file>
         <file>images/paste.png</file>
         <file>images/save.png</file>
+        <file>images/bold.png</file>
+        <file>images/bringtofront.png</file>
+        <file>images/but-quit.png</file>
+        <file>images/default.png</file>
+        <file>images/delete.png</file>
+        <file>images/floodfill.png</file>
+        <file>images/group.png</file>
+        <file>images/italic.png</file>
+        <file>images/linecolor.png</file>
+        <file>images/linepointer.png</file>
+        <file>images/pointer.png</file>
+        <file>images/redo.png</file>
+        <file>images/rotateleft.png</file>
+        <file>images/rotateright.png</file>
+        <file>images/sendtoback.png</file>
+        <file>images/shadow.png</file>
+        <file>images/test1.png</file>
+        <file>images/test2.png</file>
+        <file>images/textpointer.png</file>
+        <file>images/underline.png</file>
+        <file>images/undo.png</file>
+        <file>images/ungroup.png</file>
+        <file>images/zoomin.png</file>
+        <file>images/zoomout.png</file>
     </qresource>
 </RCC>
