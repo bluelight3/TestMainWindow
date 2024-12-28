@@ -81,7 +81,6 @@ public:
 
 protected:
     void mousePressEvent(QMouseEvent *event);
-    void
 
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent* event);
