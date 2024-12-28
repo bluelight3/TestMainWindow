@@ -113,12 +113,12 @@ void DiagramItem::removeArrows()
     // need a copy here since removeArrow() will
     // modify the arrows container
     const auto arrowsCopy = arrows;
-    for (Arrow *arrow : arrowsCopy) {
-        arrow->startItem()->removeArrow(arrow);
-        arrow->endItem()->removeArrow(arrow);
-        scene()->removeItem(arrow);
-        delete arrow;
-    }
+//    for (Arrow *arrow : arrowsCopy) {
+//        arrow->startItem()->removeArrow(arrow);
+//        arrow->endItem()->removeArrow(arrow);
+//        scene()->removeItem(arrow);
+//        delete arrow;
+//    }
 }
 //! [2]
 

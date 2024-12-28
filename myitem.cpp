@@ -6,18 +6,20 @@
 #include <QGraphicsSceneContextMenuEvent>
 #include <QMenu>
 #include <QDebug>
+#include "control.h"
 
+extern Control control;
 MyItem::MyItem()
 {
     brushColor = Qt::red;
     m_name = "defaultName";
     myDiagramType = MyType::MyTest1;
     m_point = QPointF(0,0);
+    m_rect = QRect(-40,-40,40,40);
 
     setFlag(QGraphicsItem::ItemIsFocusable  ); // 如果要用键盘控制图形项，就必须使图形项可以获得焦点，即设置该标志
     setFlag(QGraphicsItem::ItemIsMovable);     // 如果要想用鼠标控制图形项，那么必须先设置该标志
     setFlag(QGraphicsItem::ItemIsSelectable);
-
                                                // 其实也可以在创建图形项进行设置
     setAcceptHoverEvents(true);                // 使图形项支持鼠标悬停事件
 
@@ -29,13 +31,12 @@ MyItem::MyItem(MyItem *myItem)
     m_name = myItem->m_name;
     myDiagramType = myItem->myDiagramType;
     m_point = myItem->m_point;
-
+    m_rect = myItem->m_rect;
 
 
     setFlag(QGraphicsItem::ItemIsFocusable  ); // 如果要用键盘控制图形项，就必须使图形项可以获得焦点，即设置该标志
     setFlag(QGraphicsItem::ItemIsMovable);     // 如果要想用鼠标控制图形项，那么必须先设置该标志
-    setFlag(QGraphicsItem::ItemIsSelectable);
-                                               // 其实也可以在创建图形项进行设置
+    setFlag(QGraphicsItem::ItemIsSelectable);   // 其实也可以在创建图形项进行设置
 
 
     setAcceptHoverEvents(true);                // 使图形项支持鼠标悬停事件
@@ -45,12 +46,16 @@ QRectF MyItem::boundingRect() const
 {
     qreal adjust = 0.5;
     qreal penWidth =1;
+//    if (this->type() == MyTest1){
+//        return QRectF(-40 - adjust ,-40- adjust,40+adjust,40+adjust);
+//    }
+
     return QRectF(-40 - adjust ,-40- adjust,40+adjust,40+adjust);
 }
 
 void MyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-    if (isSelected() || !collidingItems().isEmpty())
+    if (isSelected() || !collidingItems().isEmpty())      // 焦点-> 选中
         painter->setPen(QPen(QColor(255,255,255,200)) );
     else
         painter->setPen(QPen(QColor(100,100,100,100)));
@@ -107,7 +112,37 @@ QString MyItem::name() const
 
 QPointF MyItem::point() const
 {
-    return m_point;
+    return m_point+this->pos();
+}
+
+bool MyItem::selectedStatus()
+{
+    return isSelected();
+}
+
+void MyItem::addArrow(Arrow *arrow)
+{
+    m_linkedArrow.append(arrow);
+}
+
+void MyItem::setLength(int length)
+{
+    m_length = length;
+}
+
+void MyItem::setRect(const QRect &rect)
+{
+    m_rect = rect;
+}
+
+QString MyItem::toggle() const
+{
+    return m_toggle;
+}
+
+void MyItem::setToggle(const QString &toggle)
+{
+    m_toggle = toggle;
 }
 
 void MyItem::keyPressEvent(QKeyEvent *event)
@@ -122,16 +157,46 @@ void MyItem::keyPressEvent(QKeyEvent *event)
         moveBy(10,0);
 }
 
+
+//
 void MyItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     setFocus();
-    setCursor(Qt::ClosedHandCursor);
+    if (control.getMyMode() == Mode::InsertLine)
+    {
+        setCursor(Qt::CrossCursor);
+    }
+    else
+    {
+        setCursor(Qt::ClosedHandCursor);
+    }
+//    emit selectItem();
 }
+
+//void MyItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+//{
+//    if (event->modifiers() == Qt::ControlModifier)
+//    {
+//        // 按住Ctrl时松开可能的操作
+//    }
+//    else
+//        setSelected(false);
+
+//}
 
 void MyItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    setCursor(Qt::OpenHandCursor);
-    setToolTip(QString("I am item %1").arg(this->name()));
+
+    if (control.getMyMode() == Mode::InsertLine)
+    {
+        setCursor(Qt::CrossCursor);
+    }
+    else
+    {
+        setCursor(Qt::OpenHandCursor);
+        setToolTip(QString("I am item %1").arg(this->name()));
+    }
+
 }
 
 void MyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
@@ -172,15 +237,30 @@ void MyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    MyItemidget* myItemWidget = new MyItemidget();
+    control.createMyItemWidget();
+    MyItemWidget* myItemWidget = control.getMyItemWidget();
     myItemWidget->setItemName(this->name());
-    myItemWidget->setItemMyType(this->diagramType());
+    myItemWidget->setItemType(this->diagramType());
     myItemWidget->setItemToggle("default toggle");
-    myItemWidget->setItemPixmap(this->image());
-
+    myItemWidget->setItemPixMap(this->image());
     myItemWidget->setTitleName(this->name());
 
+    QObject::connect(myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
+    QObject::connect(myItemWidget,SIGNAL(setName(QString)),this,SLOT(acceptSetName(QString)));
+
     myItemWidget->show();
+}
+
+void MyItem::acceptSetName(QString myName)
+{
+    setName(myName);
+}
+
+void MyItem::acceptSetToggle(const QString &toggle)
+{
+    setToggle(toggle);
+    // 在Item下方绘制一个graphicTextView
+    emit insertTextItem(toggle);
 }
 
 

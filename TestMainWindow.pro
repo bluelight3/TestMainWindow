@@ -18,11 +18,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     MyHelper.cpp \
     arrow.cpp \
+    control.cpp \
     diagramitem.cpp \
+    diagramtextitem.cpp \
+    loadwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     myitem.cpp \
-    myitemidget.cpp \
+    myitemwidget.cpp \
     myscene.cpp \
     mytextitem.cpp \
     myview.cpp
@@ -30,18 +33,22 @@ SOURCES += \
 HEADERS += \
     MyHelper.h \
     arrow.h \
+    control.h \
     diagramitem.h \
+    diagramtextitem.h \
     global.h \
+    loadwidget.h \
     mainwindow.h \
     myitem.h \
-    myitemidget.h \
+    myitemwidget.h \
     myscene.h \
     mytextitem.h \
     myview.h
 
 FORMS += \
+    loadwidget.ui \
     mainwindow.ui \
-    myitemidget.ui
+    myitemwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -49,8 +56,11 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    background.qrc \
     diagramscene.qrc \
-    myimages.qrc
+    myimages.qrc \
+    qss.qrc
 
 DISTFILES += \
+    labelQss.qss \
     更新记录

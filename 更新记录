@@ -5,6 +5,13 @@
 // 修复自定义label拖动到view上在view上不显示对应item的bug
 // 修复在view上相应的两种label只能显示最多一个的Bug
 // 修复右键菜单只能作用于view上不能作用于Item上的Bug
+// 完成view菜单的清空功能
+// 完成主界面的复制粘贴功能
+// 添加新的TextItem，该Item双击文本不会需要双击两次才能对文字内容进行编辑。
 
 
-// 添加字体，并且设置字体默认颜色以及字体大小
+
+
+// 注意：
+//未来整体重构，因为之前代码写成了Label放置 对应一个已申请的Item 然后单击的时候这个Item再成为m_selectedItem再调用dropevent，因此必须生成一个新的
+tmpItem 而相关的信号槽作用于这个新的tmpItem上，目前先按这个框架写

@@ -52,8 +52,9 @@
 #define ARROW_H
 
 #include <QGraphicsLineItem>
+#include "myitem.h"
 
-class DiagramItem;
+class MyItem;
 
 //! [0]
 class Arrow : public QGraphicsLineItem
@@ -61,15 +62,16 @@ class Arrow : public QGraphicsLineItem
 public:
     enum { Type = UserType + 4 };
 
-    Arrow(DiagramItem *startItem, DiagramItem *endItem,
+    Arrow(MyItem *startItem, MyItem *endItem,
           QGraphicsItem *parent = nullptr);
 
     int type() const override { return Type; }
     QRectF boundingRect() const override;
     QPainterPath shape() const override;
     void setColor(const QColor &color) { myColor = color; }
-    DiagramItem *startItem() const { return myStartItem; }
-    DiagramItem *endItem() const { return myEndItem; }
+    MyItem *startItem() const { return myStartItem; }
+    MyItem *endItem() const { return myEndItem; }
+
 
     void updatePosition();
 
@@ -77,9 +79,10 @@ protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
 
+
 private:
-    DiagramItem *myStartItem;
-    DiagramItem *myEndItem;
+    MyItem *myStartItem;
+    MyItem *myEndItem;
     QPolygonF arrowHead;
     QColor myColor = Qt::black;
 };

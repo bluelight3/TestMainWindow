@@ -12,7 +12,12 @@
 #include <QDebug>
 #include <QClipboard>
 #include <QMimeData>
+#include <QGraphicsSceneMouseEvent>
+#include <QElapsedTimer>
 #include <QApplication>
-#include <QGraphicsSceneEvent>
+
+//#include <qobject.h>
+//#include "mainwindow.h"
+//#define SHOW_LOADWIDGET
 
 #endif // MAINWINDOW_H

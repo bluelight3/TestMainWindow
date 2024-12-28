@@ -9,12 +9,9 @@ class MyTextItem : public QGraphicsTextItem
 {
     Q_OBJECT
 public:
-    MyTextItem(QGraphicsItem *parent = 0);
-    MyTextItem(MyTextItem* myTextItem);
-signals:
-    void mySignal(QString);
-    void selectedChange(QGraphicsItem *item);
-
+    MyTextItem(QGraphicsItem *parent = nullptr);
+private:
+    QString m_store_str;
 protected:
     void focusInEvent(QFocusEvent *event) override;
     void focusOutEvent(QFocusEvent *event) override;
@@ -22,8 +19,12 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 
-private:
-    QString m_store_str; //保存字符串
+
+signals:
+    void mySignal(QString);
+
+
+
 };
 
 #endif // MYTEXTITEM_H
