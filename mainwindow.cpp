@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 初始化
     setAcceptDrops(true);
+    setMouseTracking(true);
+    setAttribute(Qt::WA_Hover,true);
 
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
@@ -141,6 +143,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionStatus,SIGNAL(triggered()),this, SLOT(showStatus()));
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
+    connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
+
 //    connect(this,SIGNAL(setMyDragMode(Mode)),m_view,SLOT(acceptSetMyDragMode(Mode)));
     connect(&control,SIGNAL(setMyDragMode()),m_view,SLOT(acceptSetMyDragMode()));
     connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
@@ -167,6 +171,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionDelete->setEnabled(true);
 
 //    this->loadStyle(":/qss/lightblue.css");
+
+    // 显示状态栏
+
+    m_tmpLabel = new QLabel("坐标",this);
+    //将标签设置到状态栏的右侧
+    ui->statusbar->addPermanentWidget(m_tmpLabel);
 
 }
 
@@ -530,10 +540,27 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             }
         }
     }
-
-
     else
         return QWidget::eventFilter(obj,event);
+}
+
+bool MainWindow::event(QEvent *e)
+{
+
+    if(QEvent::HoverMove == e->type())//鼠标移动
+    {
+        QHoverEvent *hoverEvent = static_cast<QHoverEvent*>(e);
+        if (m_view->geometry().contains(this->mapFromGlobal(QCursor::pos())))
+        {
+            // 显示状态栏
+            QString pointmsg = QString("坐标:(%0,%1)").arg(m_view->mapFromGlobal(QCursor::pos()).x()).arg(m_view->mapFromGlobal(QCursor::pos()).y());
+
+            //将标签设置到状态栏的右侧
+            m_tmpLabel->setText(pointmsg);
+        }
+    }
+
+    return QWidget::event(e);
 }
 
 void MainWindow::acceptInsertItem()
@@ -836,14 +863,15 @@ void MainWindow::testNew()
 
 void MainWindow::testOpen()
 {
-    m_projectName = FileHelper::GetFileName("*.ini(配置文件)");
-
+    m_projectName = QFileDialog::getOpenFileName(this,tr("open File"),"./" , tr("(*.ini)"));
+    if (m_projectName.isEmpty()) return;
     // 实现在界面中打开该文件名，读取相关参数，并对整个程序进行相关配置
     openProject();
 }
 
 void MainWindow::testSave()
 {
+    m_projectSaveName = QFileDialog::getSaveFileName(this,tr("Save File"),"./1.ini",tr("(*.ini)"));
     saveProject();
 }
 
@@ -913,6 +941,11 @@ void MainWindow::testPaste()
 
     // 同样的，主界面中直接执行槽函数而不需要发射信号
     acceptClipBoardInsertItem(&tmpItem);
+}
+
+void MainWindow::testExit()
+{
+    this->close();
 }
 
 void MainWindow::testDelete()
@@ -1173,6 +1206,56 @@ void MainWindow::do_timer_timeout()
 void MainWindow::openProject()
 {
 
+    QSettings settings (m_projectName,QSettings::IniFormat);
+
+    m_scene->clear();
+    int cnt = 0;
+    QMap<QString,MyItem*> map_item;
+    while(1){
+        QString item = "item" + QString::number(++cnt);
+        if (!settings.value(item+"/type").toInt())
+            break;
+        int type = settings.value(item+"/type").toInt();
+        if (type == MyItem::Type ){
+            int myType = settings.value(item+"/myType").toInt();
+            auto item0 = new MyItem();
+            QColor color;
+            if (settings.value(item+"/Color").canConvert<QColor>())
+            {
+                color = settings.value(item+"/Color").value<QColor>();
+                item0->setColor(color);
+            }
+            item0->setType(MyItem::MyType(myType));
+            item0->setPos(settings.value(item+"/pos").toPointF());
+            item0->setRotation(settings.value(item+"/degree").toDouble());
+            item0->setName(settings.value(item+"/name").toString());
+            item0->setPoint(settings.value(item + "/point").toPointF());
+            item0->setToggle(settings.value(item+"/toggle").toString());
+            m_scene->addItem(item0);
+            map_item.insert(item,item0);
+        }
+        else if (type == Arrow::Type){
+            auto startItem = map_item.value(settings.value(item+"/startItem").toString());
+            auto endItem = map_item.value(settings.value(item+"/endItem").toString());
+            if (startItem == nullptr || endItem == nullptr ) continue;
+            auto arrow = new Arrow(startItem,endItem);
+            arrow->setStartPoint(settings.value(item+"/startPoint").toPointF());
+            arrow->setEndPoint(settings.value(item+"/endPoint").toPointF());
+            startItem->addArrow(arrow);
+            endItem->addArrow(arrow);
+            arrow->setZValue(-1000.0);
+            m_scene->addItem(arrow);
+            arrow->updatePosition();
+        }
+        else if (type == MyTextItem::Type){
+            auto item0 = new MyTextItem();
+            item0->setPos(settings.value(item+"/pos").toPointF());
+            item0->setRotation(settings.value(item+"degree").toDouble());
+            item0->setPlainText(QString::fromLocal8Bit( settings.value(item+"/text").toByteArray() ));
+            m_scene->addItem(item0);
+        }
+    }
+
 }
 
 
@@ -1187,7 +1270,41 @@ void MainWindow::openProject()
 **********************************************/
 void MainWindow::saveProject()
 {
+    QSettings settings(m_projectSaveName,QSettings::IniFormat);
+    settings.setIniCodec("utf-8");
+    settings.clear();
+    int cnt = 0;
 
+    QMap<QGraphicsItem*,QString> map_item;
+    for (auto item : m_scene->items()){
+        QString str = "item" + QString::number(++cnt);
+        settings.beginGroup(str);
+        settings.setValue("pos",item->pos());
+        settings.setValue("type",item->type());
+        settings.setValue("degree",item->rotation());
+        map_item.insert(item,str);
+        if (item->type()==Arrow::Type){
+            auto ln = (Arrow*)item;
+            settings.setValue("Arrow",ln->line());
+            settings.setValue("startItem",map_item.value(ln->startItem()));
+            settings.setValue("endItem",map_item.value(ln->endItem()));
+            settings.setValue("startPoint",ln->startPoint());
+            settings.setValue("endPoint",ln->endPoint());
+        }
+        else if (item->type()==MyItem::Type){
+            auto ln =(MyItem*)item;
+            settings.setValue("Color",ln->color());
+            settings.setValue("MyType",ln->diagramType());
+            settings.setValue("name",ln->name());
+            settings.setValue("point",ln->point());
+            settings.setValue("toggle",ln->toggle());
+        }
+        else if (item->type()==MyTextItem::Type){
+            auto text = (MyTextItem*)item;
+            settings.setValue("text",text->toPlainText().toLocal8Bit());
+        }
+        settings.endGroup();
+    }
 }
 
 

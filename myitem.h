@@ -46,7 +46,7 @@ private:
     QColor brushColor;                  // 该Item绘制颜色
     MyType myDiagramType;               // 该Item的类型
     QString m_name;                     // 该Item的名称
-    QPointF m_point;                    // 该Item相对scene的位置
+    QPointF m_point;                    // 该Item相对scene的位置  实际暂不使用，可以用->pos()代替
     QString m_toggle;                   // 关于这个Item的注释，描述信息
     QVector<Arrow*> m_linkedArrow;      // 该Item所有相连的箭头
     QRect m_rect;                       // 图元外接矩形;

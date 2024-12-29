@@ -66,6 +66,9 @@ public:
     QString m_projectName;
     QString m_projectSaveName;
 
+    // 状态栏相关
+    QLabel* m_tmpLabel;
+
 
     void createToolBox();
     void buttonGroupClicked(int id);
@@ -89,7 +92,7 @@ protected:
 
 public:
     bool eventFilter(QObject* obj,QEvent * event);
-
+    bool event(QEvent *e);
 
 private:
     Ui::MainWindow *ui;
@@ -141,6 +144,8 @@ private slots:
     void testCut();
     void testCopy();
     void testPaste();
+    void testExit();
+
     void testDelete();
     void testConnectLine();
     void testBrush();

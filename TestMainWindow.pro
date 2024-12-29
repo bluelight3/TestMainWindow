@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     MyHelper.cpp \
     arrow.cpp \
+    command.cpp \
     control.cpp \
     diagramitem.cpp \
     diagramtextitem.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 HEADERS += \
     MyHelper.h \
     arrow.h \
+    command.h \
     control.h \
     diagramitem.h \
     diagramtextitem.h \

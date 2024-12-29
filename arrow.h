@@ -75,6 +75,12 @@ public:
 
     void updatePosition();
 
+    QPointF startPoint() const;
+    void setStartPoint(const QPointF &value);
+    
+    QPointF endPoint() const;
+    void setEndPoint(const QPointF &value);
+    
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget = nullptr) override;
@@ -85,6 +91,9 @@ private:
     MyItem *myEndItem;
     QPolygonF arrowHead;
     QColor myColor = Qt::black;
+    QPointF point_start;
+    QPointF point_end;
+    
 };
 //! [0]
 

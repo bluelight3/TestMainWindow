@@ -26,6 +26,6 @@ int main(int argc, char *argv[])
 #endif
 
 
-    w.show();
+//    w.show();
     return a.exec();
 }

@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>945</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -32,7 +32,7 @@
     <addaction name="actionSave"/>
     <addaction name="actionSaveAs"/>
     <addaction name="separator"/>
-    <addaction name="actionexit"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_2">
     <property name="title">
@@ -98,7 +98,6 @@
    <addaction name="actionUndo"/>
    <addaction name="actionRedo"/>
    <addaction name="actionConnectLine"/>
-   <addaction name="actionexit"/>
    <addaction name="actionBrush"/>
   </widget>
   <action name="actionNew">
@@ -192,7 +191,7 @@
     <string>另存为...</string>
    </property>
   </action>
-  <action name="actionexit">
+  <action name="actionExit">
    <property name="icon">
     <iconset resource="diagramscene.qrc">
      <normaloff>:/images/but-quit.png</normaloff>:/images/but-quit.png</iconset>
@@ -391,8 +390,8 @@
   </action>
  </widget>
  <resources>
-  <include location="diagramscene.qrc"/>
   <include location="myimages.qrc"/>
+  <include location="diagramscene.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -241,7 +241,7 @@ void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     MyItemWidget* myItemWidget = control.getMyItemWidget();
     myItemWidget->setItemName(this->name());
     myItemWidget->setItemType(this->diagramType());
-    myItemWidget->setItemToggle("default toggle");
+    myItemWidget->setItemToggle(this->toggle());
     myItemWidget->setItemPixMap(this->image());
     myItemWidget->setTitleName(this->name());
 
