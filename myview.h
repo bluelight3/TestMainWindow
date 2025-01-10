@@ -11,20 +11,23 @@ class MyView : public QGraphicsView
 public:
     explicit MyView(QWidget * parent = 0);
 protected:
-    void keyPressEvent(QKeyEvent *event) override;
+
 
     void mousePressEvent(QMouseEvent *event) override;
 //    void dragEnterEvent(QDragEnterEvent *event);
     void mouseMoveEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
     void dragMoveEvent(QDragMoveEvent *event) override;
     void dropEvent(QDropEvent *event) override;
-
+    void paintEvent(QPaintEvent *event) override;
     void contextMenuEvent(QContextMenuEvent *event) override;
 
 
 signals:
     void insertItem();
+    void moveItem(MyItem*,QPointF);
     void removeItem(QGraphicsItem*);
     void addArrow(Arrow*);
 
@@ -39,6 +42,9 @@ private:
     QGraphicsItem * m_pRightButtonPressItem = nullptr;
     bool m_bRightButtonPressed = false;
     MyItem* m_selectedItem;
+    QPointF oldPos; //拖动事件情况上一次位置
+    QPointF m_lastPos;  // 上一次位置
+    bool m_paintFlag;
 
 //    Mode m_myMode;
     QGraphicsLineItem* m_line;

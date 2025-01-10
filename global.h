@@ -16,9 +16,11 @@
 #include <QElapsedTimer>
 #include <QApplication>
 #include <QTimer>
+#include <QUndoCommand>
+#include <QUndoStack>
 
 //#include <qobject.h>
 //#include "mainwindow.h"
-#define SHOW_LOADWIDGET
+//#define SHOW_LOADWIDGET
 
 #endif // MAINWINDOW_H

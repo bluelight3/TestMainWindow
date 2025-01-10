@@ -1,5 +1,8 @@
 #include "myitemwidget.h"
 #include "ui_myitemwidget.h"
+#include "mainwindow.h"
+
+
 
 MyItemWidget::MyItemWidget(QWidget *parent) :
     QWidget(parent),

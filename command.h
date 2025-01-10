@@ -7,7 +7,7 @@
 #include "myitem.h"
 #include "arrow.h"
 class Arrow;
-class Movecommand : public QUndoCommand
+class Movecommand : public QObject,public QUndoCommand
 {
     Q_OBJECT
 public:
@@ -22,13 +22,27 @@ public:
     int id() const override {return Id;}
 
 private:
-    MyItem *myItem;
-    QPointF myOldPos;
-    QPointF newPos;
+    MyItem *m_myItem;
+    QPointF m_myOldPos;
+    QPointF m_newPos;
+};
+
+class DeleteCommand : public QUndoCommand
+{
+public:
+    explicit DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent = 0);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    QList<QGraphicsItem *> list_item;
+    QMap<QGraphicsItem *, QList<Arrow *> > map_item_arrow;
+    QGraphicsScene *myGraphicsScene;
 };
 
 
-class AddCommand : public QUndoCommand
+class AddCommand : public QObject,public QUndoCommand
 {
     Q_OBJECT
 public:
@@ -38,12 +52,13 @@ public:
 
     void undo() override;
     void redo() override;
-    bool mergeWith(const QUndoCommand *other) override;
 
 private:
-    MyItem *myItem;
-    QPointF myOldPos;
-    QPointF newPos;
+    MyItem *m_myDiagramItem;
+    QGraphicsScene *m_myGraphicsScene;
+    QPointF m_initialPosition;
+
+
 };
 
 

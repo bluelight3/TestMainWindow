@@ -145,6 +145,11 @@ void MyItem::setToggle(const QString &toggle)
     m_toggle = toggle;
 }
 
+QRect MyItem::rect() const
+{
+    return m_rect;
+}
+
 void MyItem::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Down)
@@ -237,18 +242,7 @@ void MyItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    control.createMyItemWidget();
-    MyItemWidget* myItemWidget = control.getMyItemWidget();
-    myItemWidget->setItemName(this->name());
-    myItemWidget->setItemType(this->diagramType());
-    myItemWidget->setItemToggle(this->toggle());
-    myItemWidget->setItemPixMap(this->image());
-    myItemWidget->setTitleName(this->name());
-
-    QObject::connect(myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
-    QObject::connect(myItemWidget,SIGNAL(setName(QString)),this,SLOT(acceptSetName(QString)));
-
-    myItemWidget->show();
+    control.showProperty(this);
 }
 
 void MyItem::acceptSetName(QString myName)

@@ -6,7 +6,7 @@
 #include <QDrag>
 #include "MyHelper.h"
 #include "global.h"
-
+#include "command.h"
 
 const int InsertTextButton = 10;
 extern Control control;
@@ -21,10 +21,15 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
     setMouseTracking(true);
     setAttribute(Qt::WA_Hover,true);
+    this->setMaximumSize(1080,720);
+
 
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
     m_selectedItem = NULL;
+    m_undoStack = new QUndoStack(this);
+    m_undoStack->setUndoLimit( 5 );
+
     //
 
     //设置一个单独接收拖动标签
@@ -105,7 +110,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_scene = new QGraphicsScene();
 
     m_view->setScene(m_scene);
-    m_scene->setSceneRect(QRectF(0,0,640,480));
+    m_scene->setSceneRect(QRectF(0,0,1080,720));
 //    scene->addPixmap(QPixmap("C://Users//5510760lbw//Pictures//IP.png"));
     m_scene->setForegroundBrush(QColor(255,255,255,0));
 
@@ -119,23 +124,28 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_view,SIGNAL(clear()),this,SLOT(acceptClear())); // 暂时复用粘贴栏
     connect(m_view,SIGNAL(selectItem(QGraphicsItem*)),this,SLOT(acceptSelectItem(QGraphicsItem*)));
     connect(m_view,SIGNAL(addArrow(Arrow*)),this,SLOT(acceptAddArrow(Arrow*)));
-
+    connect(m_view,SIGNAL(moveItem(MyItem*,QPointF)),this, SLOT(acceptMoveItem(MyItem*,QPointF)));
 
 
     connect(ui->actionNew,SIGNAL(triggered()),this,SLOT(testNew()));
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(testOpen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(testSave()));
     connect(ui->actionSaveAs,SIGNAL(triggered()),this,SLOT(testSaveAs()));
-    connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
 
+
+    connect(ui->actionUndo,SIGNAL(triggered()), this->m_undoStack, SLOT(undo()));
+    connect(ui->actionRedo,SIGNAL(triggered()), this->m_undoStack, SLOT(redo()));
     connect(ui->actionCut,SIGNAL(triggered()),this,SLOT(testCut()));
     connect(ui->actionCopy,SIGNAL(triggered()),this,SLOT(testCopy()));
     connect(ui->actionPaste,SIGNAL(triggered()),this,SLOT(testPaste()));
+    connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
 
-    connect(ui->actionleftRotate,SIGNAL(triggered()),this,SLOT(testLeftRotate()));
-    connect(ui->actionrightRotate,SIGNAL(triggered()),this,SLOT(testRightRotate()));
     connect(ui->actionToFront,SIGNAL(triggered()),this,SLOT(testToFront()));
     connect(ui->actionToBack,SIGNAL(triggered()),this,SLOT(testToBack()));
+    connect(ui->actionToGroup,SIGNAL(triggered()),this,SLOT(testToGroup()));
+     connect(ui->actiongroupBreak,SIGNAL(triggered()),this,SLOT(testGroupBreak()));
+    connect(ui->actionleftRotate,SIGNAL(triggered()),this,SLOT(testLeftRotate()));
+    connect(ui->actionrightRotate,SIGNAL(triggered()),this,SLOT(testRightRotate()));
     connect(ui->actionBold,SIGNAL(triggered()),this,SLOT(testBold()));
     connect(ui->actionItalic,SIGNAL(triggered()),this,SLOT(testItalic()));
     connect(ui->actionUnderLine,SIGNAL(triggered()),this,SLOT(testUnderLine()));
@@ -144,10 +154,20 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
     connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
+    connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
+
 
 //    connect(this,SIGNAL(setMyDragMode(Mode)),m_view,SLOT(acceptSetMyDragMode(Mode)));
     connect(&control,SIGNAL(setMyDragMode()),m_view,SLOT(acceptSetMyDragMode()));
-    connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
+
+    // 定时刷新界面
+    m_timer = new QTimer;
+    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
+    m_timer->start(30);
+    connect(m_timer,SIGNAL(timeout()),this,SLOT(updateWindow()));
+
+    // 主界面更新的情况
+    connect(m_view,SIGNAL(insertItem()),this,SLOT(acceptDataChanged()));
 
 //    m_view = ui->graphicsView;
 
@@ -464,6 +484,11 @@ void MainWindow::dropEvent(QDropEvent *event)
 
             event->accept();
         }
+        if (!control.m_bUpdateFlag){
+            control.m_bUpdateFlag = true;
+            this->setWindowTitle(windowTitle()+"*");
+        }
+
     }
     else{
         event->ignore();
@@ -856,6 +881,27 @@ void MainWindow::acceptAddArrow(Arrow *myItem)
     }
 }
 
+void MainWindow::acceptMoveItem(MyItem *myItem, QPointF oldPos)
+{
+    m_undoStack->push(new Movecommand(myItem, oldPos));
+}
+
+void MainWindow::acceptSetToggle(QString myToggle)
+{
+    MyTextItem* myTextItem = new MyTextItem();
+    MyItem* tmpItem = dynamic_cast<MyItem*>(m_scene->selectedItems().first());
+    QPointF offset = tmpItem->rect().center() + QPointF(0,-40);
+    myTextItem->setPos(tmpItem->pos()+offset);
+    myTextItem->setPlainText(myToggle);
+    m_scene->addItem(myTextItem);
+}
+
+void MainWindow::updateWindow()
+{
+    m_scene->update();
+    m_view->repaint();
+}
+
 void MainWindow::testNew()
 {
 
@@ -871,13 +917,25 @@ void MainWindow::testOpen()
 
 void MainWindow::testSave()
 {
-    m_projectSaveName = QFileDialog::getSaveFileName(this,tr("Save File"),"./1.ini",tr("(*.ini)"));
+
+    if (m_projectName.size()<0)
+        m_projectName = QFileDialog::getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.txt)"));
     saveProject();
+
+    // 默认保存成功
+    control.m_bUpdateFlag = false;
+    this->setWindowTitle(this->windowTitle().remove('*'));
 }
 
 void MainWindow::testSaveAs()
 {
     saveAsProject();
+    if (m_projectSaveName.size() != 0){
+        control.m_bUpdateFlag = false;
+        this->setWindowTitle(this->windowTitle().remove('*'));
+        m_projectName = m_projectSaveName;
+    }
+
 }
 
 void MainWindow::testCut()
@@ -978,6 +1036,7 @@ void MainWindow::testBrush()
 {
     m_scene->update();
     m_view->repaint();
+//    connect(control.getMyItemWidget(),SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item)
@@ -1003,6 +1062,14 @@ void MainWindow::itemSelected(QGraphicsItem *item)
 void MainWindow::myItemSelected()
 {
     ui->actionDelete->setEnabled(true);
+}
+
+void MainWindow::acceptDataChanged()
+{
+    if (!control.m_bUpdateFlag){
+        control.m_bUpdateFlag = true;
+        setWindowTitle(windowTitle()+"*");
+    }
 }
 
 
@@ -1100,12 +1167,37 @@ void MainWindow::testToBack()
 
 void MainWindow::testToGroup()
 {
+    int cnt=m_scene->selectedItems().count();
+    if (cnt>1)
+    {
+        QGraphicsItemGroup* group =new QGraphicsItemGroup; //创建组合
+        m_scene->addItem(group); //组合添加到场景中
 
+        for (int i=0;i<cnt;i++)
+        {
+            QGraphicsItem* item=m_scene->selectedItems().at(0);
+            item->setSelected(false); //清除选择虚线框
+            item->clearFocus();
+            group->addToGroup(item); //添加到组合
+        }
+
+        group->setFlags(QGraphicsItem::ItemIsMovable| QGraphicsItem::ItemIsSelectable| QGraphicsItem::ItemIsFocusable);
+        m_scene->clearSelection();
+        group->setSelected(true);
+    }
 }
 
 void MainWindow::testGroupBreak()
 {
-
+    int cnt=m_scene->selectedItems().count();
+    if (cnt==1)
+    {
+        auto item = m_scene->selectedItems().first();
+        if( item->type()!=QGraphicsItemGroup::Type )
+            return;
+        auto group=(QGraphicsItemGroup*)item;
+        m_scene->destroyItemGroup(group);
+    }
 }
 
 void MainWindow::testBold()
@@ -1270,7 +1362,7 @@ void MainWindow::openProject()
 **********************************************/
 void MainWindow::saveProject()
 {
-    QSettings settings(m_projectSaveName,QSettings::IniFormat);
+    QSettings settings(m_projectName,QSettings::IniFormat);
     settings.setIniCodec("utf-8");
     settings.clear();
     int cnt = 0;
@@ -1320,13 +1412,8 @@ void MainWindow::saveProject()
 void MainWindow::saveAsProject()
 {
     QFileDialog fileDialog;
-    QString fileName = fileDialog.getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.txt)"));
-    if(fileName == "")
-    {
-        return;
-    }
-    QFile file(fileName);
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    m_projectSaveName = fileDialog.getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.ini)"));
+    if(m_projectSaveName == "")
     {
         QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
         return;
@@ -1334,13 +1421,46 @@ void MainWindow::saveAsProject()
     else
     {
         // TODO:这里将界面的相关参数写入我们给的文件
+        QSettings settings(m_projectSaveName,QSettings::IniFormat);
+        settings.setIniCodec("utf-8");
+        settings.clear();
+        int cnt = 0;
 
+        QMap<QGraphicsItem*,QString> map_item;
+        for (auto item : m_scene->items()){
+            QString str = "item" + QString::number(++cnt);
+            settings.beginGroup(str);
+            settings.setValue("pos",item->pos());
+            settings.setValue("type",item->type());
+            settings.setValue("degree",item->rotation());
+            map_item.insert(item,str);
+            if (item->type()==Arrow::Type){
+                auto ln = (Arrow*)item;
+                settings.setValue("Arrow",ln->line());
+                settings.setValue("startItem",map_item.value(ln->startItem()));
+                settings.setValue("endItem",map_item.value(ln->endItem()));
+                settings.setValue("startPoint",ln->startPoint());
+                settings.setValue("endPoint",ln->endPoint());
+            }
+            else if (item->type()==MyItem::Type){
+                auto ln =(MyItem*)item;
+                settings.setValue("Color",ln->color());
+                settings.setValue("MyType",ln->diagramType());
+                settings.setValue("name",ln->name());
+                settings.setValue("point",ln->point());
+                settings.setValue("toggle",ln->toggle());
+            }
+            else if (item->type()==MyTextItem::Type){
+                auto text = (MyTextItem*)item;
+                settings.setValue("text",text->toPlainText().toLocal8Bit());
+            }
+            settings.endGroup();
+        }
         //        QTextStream textStream(&file);
 
         /////////
 
         QMessageBox::warning(this,tr("提示"),tr("保存文件成功"));
-        file.close();
     }
 }
 

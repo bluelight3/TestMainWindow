@@ -58,7 +58,6 @@ public:
     QLabel *m_labelText;
     QLabel *m_labelText2;
 
-
     //载入界面
 
 
@@ -68,6 +67,9 @@ public:
 
     // 状态栏相关
     QLabel* m_tmpLabel;
+
+    // 撤回恢复相关
+    QUndoStack* m_undoStack;
 
 
     void createToolBox();
@@ -111,7 +113,7 @@ private:
     QGraphicsScene* m_scene;
     QMap<QLabel*,QGraphicsItem*> qmap_myItem;
     QVector<QGraphicsItem*>* qvec_MyItemOnView;  // 在界面上显示的Item
-
+    QTimer* m_timer;        // 界面刷新定时器
 
 signals:
     void setMyDragMode(Mode m_myMode);
@@ -124,6 +126,7 @@ public:
     void saveAsProject();
 
     void loadStyle(const QString &qssFile);
+
 public slots:
     void acceptInsertItem();
     void acceptInsertTextItem();    // 添加文本Item 注释更新用
@@ -135,6 +138,9 @@ public slots:
     void showStatus();  //显示当前状态 (仅调试用)
 //    void editorLostFocus(DiagramTextItem *item);
     void acceptAddArrow(Arrow* myItem);
+    void acceptMoveItem(MyItem* myItem,QPointF oldPos);
+    void acceptSetToggle(QString myToggle);
+    void updateWindow();                // 更新界面
 
 private slots:
     void testNew();
@@ -174,6 +180,8 @@ private slots:
 
     void itemSelected(QGraphicsItem *item);
     void myItemSelected();          // 仅表示有Item被选中
+
+    void acceptDataChanged();
 
 };
 #endif // MAINWINDOW_H

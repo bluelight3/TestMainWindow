@@ -13,31 +13,44 @@ extern Control control;
 MyView::MyView(QWidget * parent) :QGraphicsView(parent)
 {
     setAcceptDrops(true);
-    setDragMode(QGraphicsView::RubberBandDrag);
+    //    setDragMode(QGraphicsView::RubberBandDrag);
     m_bAcceptContextMenu = true;
     m_line = nullptr;
+    m_paintFlag = false;
 }
 
 void MyView::keyPressEvent(QKeyEvent *event)
 {
     switch (event->key()) {
     case Qt::Key_Plus:
+    {
         scale(1.2,1.2);
         break;
     }
+    case Qt::Key_Alt:
+    {
+        m_paintFlag = true;
+        break;
+    }
+    }
     QGraphicsView::keyPressEvent(event);
+}
+
+void MyView::keyReleaseEvent(QKeyEvent *event)
+{
+    m_paintFlag = false;
 }
 
 void MyView::mousePressEvent(QMouseEvent *event)
 {
     if (control.getMyMode() == Mode::InsertItem)
     {
-        MyItem * selectedItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
-        if (!selectedItem){
+        m_selectedItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
+        if (!m_selectedItem){
             QGraphicsView::mousePressEvent(event);
         }
         else{
-            emit selectItem(selectedItem);
+            emit selectItem(m_selectedItem);
         }
     }
     else if (control.getMyMode() == InsertLine){
@@ -47,24 +60,27 @@ void MyView::mousePressEvent(QMouseEvent *event)
         m_line->setPen(QPen(Qt::black, 2));
 
     }
+
+
     return QGraphicsView::mousePressEvent(event);
 }
 
 void MyView::mouseMoveEvent(QMouseEvent *event)
 {
+    m_lastPos = event->pos();
     if (control.getMyMode() == Mode::InsertLine && m_line != nullptr) {
         QLineF newLine(m_line->line().p1(), event->pos());
         m_line->setLine(newLine);
     } else if (control.getMyMode() == Mode::MoveItem) {
         return QGraphicsView::mouseMoveEvent(event);
     }
-    else{
+    else
         return QGraphicsView::mouseMoveEvent(event);
-    }
 }
 
 void MyView::mouseReleaseEvent(QMouseEvent *event)
 {
+    m_lastPos = event->pos();
 
     if (m_line != nullptr && control.getMyMode() == Mode::InsertLine) {
         QList<QGraphicsItem *> startItems = items(m_line->line().p1().x(),m_line->line().p1().y());
@@ -74,7 +90,7 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
         if (endItems.count() && endItems.first() == m_line)
             endItems.removeFirst();
 
-//        emit removeItem(m_line);
+        //        emit removeItem(m_line);
         delete m_line;
         //! [11] //! [12]
 
@@ -92,12 +108,20 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
             emit addArrow(arrow);
             arrow->updatePosition();
         }
-
-
-
     }
     //! [12] //! [13]
+    QPoint mousePos = mapFromGlobal(event->pos());
+
+    m_selectedItem = dynamic_cast<MyItem*>(itemAt(mousePos));
+
+    if (m_selectedItem != 0 && event->button() == Qt::LeftButton) {
+        if (oldPos != m_selectedItem->pos() && m_selectedItem->type()==MyItem::Type )
+            emit moveItem(m_selectedItem,oldPos);
+    }
+
+
     m_line = nullptr;
+
     return QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -126,37 +150,28 @@ void MyView::dropEvent(QDropEvent *event)
     }
 }
 
-//void MyView::mousePressEvent(QMouseEvent *event)
-//{
-////    setFocus();
-////    if (event->button() == Qt::RightButton){
-////        QPoint currPoint = event->pos();
-////        m_mousePos = currPoint;
-////        event->accept();
-////    }
-////    else{
-////        event->ignore();
-////    }
-//    m_bAcceptContextMenu = false;
-//    m_pRightButtonPressItem = nullptr;
-//    if (event->button() == Qt::RightButton){
-//        event->accept();
-//        m_bRightButtonPressed = true;
-//        QPoint currPoint = event->pos();
-//        m_mousePos = currPoint;
-//    }
+void MyView::paintEvent(QPaintEvent *event)
+{
 
-//}
+    QPainter painter(this->viewport());
+
+    if (m_paintFlag){
+        QPen pen;
+        pen.setWidth(1);
+        pen.setColor(Qt::red);
+        painter.setPen(pen);
+
+        //绘制横向线
+        painter.drawLine(0, m_lastPos.y(), width(), m_lastPos.y());
+        //绘制纵向线
+        painter.drawLine(m_lastPos.x(), 0, m_lastPos.x(), height());
+    }
+    return QGraphicsView::paintEvent(event);
+}
 
 
 void MyView::contextMenuEvent(QContextMenuEvent *event)
 {
-
-    //    if (m_bAcceptContextMenu){
-    //        m_bAcceptContextMenu = false;
-    //        if (m_)
-    //    }
-
 
     MyItem * selectedItem = static_cast<MyItem*>(itemAt(event->pos()));
 
@@ -229,7 +244,7 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
         QAction *copyAction = menu.addAction("复制");
         QAction *pasteAction = menu.addAction("粘贴");
         QAction *deleteAction = menu.addAction("删除");
-
+        QAction *propertyAction = menu.addAction("属性");
 
         QAction *selectedAction = menu.exec(event->globalPos());
         if (selectedAction == moveAction){
@@ -258,9 +273,6 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             mimeData->setData("application/myItem",itemData);
             QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
             clipBoard->setMimeData(mimeData);
-
-
-
         }
         else if (selectedAction == pasteAction) {
             // 这里实现粘贴操作
@@ -294,6 +306,9 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             emit removeItem(selectedItem);  // 删除选中Item
             // 这里实现删除操作
         }
+        else if (selectedAction == propertyAction) {
+            control.showProperty(selectedItem);
+        }
         else{
             qDebug() << "not defined Action";
         }
@@ -306,7 +321,7 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
 
 void MyView::acceptSetMyDragMode()
 {
-//    m_myMode = myMode;
+    //    m_myMode = myMode;
     if (control.getMyMode() == InsertLine){
         setDragMode(QGraphicsView::NoDrag);
     }
