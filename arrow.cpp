@@ -94,26 +94,6 @@ void Arrow::updatePosition()
     QLineF line(myStartItem->pos(), myEndItem->pos());
     setLine(line);
 }
-
-QPointF Arrow::startPoint() const
-{
-    return point_start;
-}
-
-void Arrow::setStartPoint(const QPointF &value)
-{
-    point_start=value;
-}
-
-QPointF Arrow::endPoint() const
-{
-    return point_end;
-}
-
-void Arrow::setEndPoint(const QPointF &value)
-{
-    point_end=value;
-}
 //! [3]
 
 //! [4]

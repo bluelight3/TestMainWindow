@@ -1,12 +1,10 @@
 #include "control.h"
+#include "mainwindow.h"
 
 Control::Control()
 {
+
     m_myMode = nullItem;
-
-    m_bUpdateFlag = false;
-
-
 }
 
 Mode Control::getMyMode() const
@@ -33,6 +31,7 @@ void Control::setMyItemWidget(MyItemWidget *value)
 void Control::createMyItemWidget()
 {
     m_myItemWidget = new MyItemWidget();
+//    connect(myItemWidget,&MyItemWidget::setToggle,&w,&MainWindow::setItemToggle);
 }
 
 void Control::destroyMyItemWidget()
@@ -40,25 +39,57 @@ void Control::destroyMyItemWidget()
     delete m_myItemWidget;
 }
 
-void Control::showMyItemWidget()
+void Control::createMyGenerateProjectForm()
 {
-    m_myItemWidget->show();
+    m_myGenerateProjectForm = new GenerateProjectForm();
 }
 
-void Control::showProperty(MyItem *myItem)
+void Control::destroyMyGenerateProjectForm()
 {
-    if(!m_myItemWidget)
-        createMyItemWidget();
-    MyItemWidget* m_myItemWidget = getMyItemWidget();
+    delete m_myGenerateProjectForm;
+}
 
-    m_myItemWidget->setItemName(myItem->name());
-    m_myItemWidget->setItemType(myItem->diagramType());
-    m_myItemWidget->setItemToggle(myItem->toggle());
-    m_myItemWidget->setItemPixMap(myItem->image());
-    m_myItemWidget->setTitleName(myItem->name());
+void Control::closeMyGenerateProjectForm()
+{
+    m_myGenerateProjectForm->close();
+}
 
-    QObject::connect(m_myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
-    QObject::connect(m_myItemWidget,SIGNAL(setName(QString)),this,SLOT(acceptSetName(QString)));
+GenerateProjectForm *Control::getMyGenerateProjectForm() const
+{
+    return m_myGenerateProjectForm;
+}
 
-    showMyItemWidget();
+void Control::setMyGenerateProjectForm(GenerateProjectForm *value)
+{
+    m_myGenerateProjectForm = value;
+}
+
+void Control::createMyGenerateProjectThread()
+{
+    m_myGenerateProjectThread = new GenerateProjectThread();
+
+    connect(m_myGenerateProjectThread,SIGNAL(generateProject(int)),
+            m_myGenerateProjectForm,SLOT(updateProgress(int)));
+    connect(m_myGenerateProjectThread,SIGNAL(generated()),
+            this,SLOT(closeMyGenerateProjectForm()));
+}
+
+void Control::destroyMyGenerateProjectThread()
+{
+    delete m_myGenerateProjectThread;
+}
+
+GenerateProjectThread *Control::getMyGenerateProjectThread() const
+{
+    return m_myGenerateProjectThread;
+}
+
+void Control::setMyGenerateProjectThread(GenerateProjectThread *value)
+{
+    m_myGenerateProjectThread = value;
+}
+
+void Control::runMyGenerateProjectThread()
+{
+    m_myGenerateProjectThread->start();
 }

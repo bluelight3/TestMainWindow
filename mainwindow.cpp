@@ -6,7 +6,7 @@
 #include <QDrag>
 #include "MyHelper.h"
 #include "global.h"
-#include "command.h"
+
 
 const int InsertTextButton = 10;
 extern Control control;
@@ -19,17 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 初始化
     setAcceptDrops(true);
-    setMouseTracking(true);
-    setAttribute(Qt::WA_Hover,true);
-    this->setMaximumSize(1080,720);
-
-
+    control.createMyItemWidget();
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
     m_selectedItem = NULL;
-    m_undoStack = new QUndoStack(this);
-    m_undoStack->setUndoLimit( 5 );
-
     //
 
     //设置一个单独接收拖动标签
@@ -110,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_scene = new QGraphicsScene();
 
     m_view->setScene(m_scene);
-    m_scene->setSceneRect(QRectF(0,0,1080,720));
+    m_scene->setSceneRect(QRectF(0,0,640,480));
 //    scene->addPixmap(QPixmap("C://Users//5510760lbw//Pictures//IP.png"));
     m_scene->setForegroundBrush(QColor(255,255,255,0));
 
@@ -124,50 +117,25 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_view,SIGNAL(clear()),this,SLOT(acceptClear())); // 暂时复用粘贴栏
     connect(m_view,SIGNAL(selectItem(QGraphicsItem*)),this,SLOT(acceptSelectItem(QGraphicsItem*)));
     connect(m_view,SIGNAL(addArrow(Arrow*)),this,SLOT(acceptAddArrow(Arrow*)));
-    connect(m_view,SIGNAL(moveItem(MyItem*,QPointF)),this, SLOT(acceptMoveItem(MyItem*,QPointF)));
+
 
 
     connect(ui->actionNew,SIGNAL(triggered()),this,SLOT(testNew()));
     connect(ui->actionOpen,SIGNAL(triggered()),this,SLOT(testOpen()));
     connect(ui->actionSave,SIGNAL(triggered()),this,SLOT(testSave()));
-    connect(ui->actionSaveAs,SIGNAL(triggered()),this,SLOT(testSaveAs()));
+    connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
 
-
-    connect(ui->actionUndo,SIGNAL(triggered()), this->m_undoStack, SLOT(undo()));
-    connect(ui->actionRedo,SIGNAL(triggered()), this->m_undoStack, SLOT(redo()));
     connect(ui->actionCut,SIGNAL(triggered()),this,SLOT(testCut()));
     connect(ui->actionCopy,SIGNAL(triggered()),this,SLOT(testCopy()));
     connect(ui->actionPaste,SIGNAL(triggered()),this,SLOT(testPaste()));
-    connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
-
-    connect(ui->actionToFront,SIGNAL(triggered()),this,SLOT(testToFront()));
-    connect(ui->actionToBack,SIGNAL(triggered()),this,SLOT(testToBack()));
-    connect(ui->actionToGroup,SIGNAL(triggered()),this,SLOT(testToGroup()));
-     connect(ui->actiongroupBreak,SIGNAL(triggered()),this,SLOT(testGroupBreak()));
-    connect(ui->actionleftRotate,SIGNAL(triggered()),this,SLOT(testLeftRotate()));
-    connect(ui->actionrightRotate,SIGNAL(triggered()),this,SLOT(testRightRotate()));
-    connect(ui->actionBold,SIGNAL(triggered()),this,SLOT(testBold()));
-    connect(ui->actionItalic,SIGNAL(triggered()),this,SLOT(testItalic()));
-    connect(ui->actionUnderLine,SIGNAL(triggered()),this,SLOT(testUnderLine()));
 
     connect(ui->actionStatus,SIGNAL(triggered()),this, SLOT(showStatus()));
+    connect(ui->actionGenerateProject,SIGNAL(triggered()),this,SLOT(testGenerateProject()));
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
-    connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
-    connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
-
-
 //    connect(this,SIGNAL(setMyDragMode(Mode)),m_view,SLOT(acceptSetMyDragMode(Mode)));
     connect(&control,SIGNAL(setMyDragMode()),m_view,SLOT(acceptSetMyDragMode()));
-
-    // 定时刷新界面
-    m_timer = new QTimer;
-    m_timer->setTimerType(Qt::TimerType::CoarseTimer);
-    m_timer->start(30);
-    connect(m_timer,SIGNAL(timeout()),this,SLOT(updateWindow()));
-
-    // 主界面更新的情况
-    connect(m_view,SIGNAL(insertItem()),this,SLOT(acceptDataChanged()));
+    connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
 
 //    m_view = ui->graphicsView;
 
@@ -190,13 +158,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->actionDelete->setEnabled(true);
 
-//    this->loadStyle(":/qss/lightblue.css");
-
-    // 显示状态栏
-
-    m_tmpLabel = new QLabel("坐标",this);
-    //将标签设置到状态栏的右侧
-    ui->statusbar->addPermanentWidget(m_tmpLabel);
 
 }
 
@@ -292,7 +253,6 @@ void MainWindow::createToolBox()
     toolBox->setMinimumWidth(itemWidget->sizeHint().width());
     toolBox->addItem(itemWidget, tr("Basic Flowchart Shapes"));
     toolBox->addItem(backgroundWidget, tr("Backgrounds"));
-
 
 
 }
@@ -393,7 +353,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
         MyItem * selectedItem = static_cast<MyItem*>(m_view->itemAt(event->pos()));
         if (selectedItem){
-            m_selectedItem = selectedItem;
+//            m_selectedItem = selectedItem;
             setFocus();
             setCursor(Qt::ClosedHandCursor);
             qDebug() <<"select Item";
@@ -484,11 +444,6 @@ void MainWindow::dropEvent(QDropEvent *event)
 
             event->accept();
         }
-        if (!control.m_bUpdateFlag){
-            control.m_bUpdateFlag = true;
-            this->setWindowTitle(windowTitle()+"*");
-        }
-
     }
     else{
         event->ignore();
@@ -565,27 +520,10 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
             }
         }
     }
+
+
     else
         return QWidget::eventFilter(obj,event);
-}
-
-bool MainWindow::event(QEvent *e)
-{
-
-    if(QEvent::HoverMove == e->type())//鼠标移动
-    {
-        QHoverEvent *hoverEvent = static_cast<QHoverEvent*>(e);
-        if (m_view->geometry().contains(this->mapFromGlobal(QCursor::pos())))
-        {
-            // 显示状态栏
-            QString pointmsg = QString("坐标:(%0,%1)").arg(m_view->mapFromGlobal(QCursor::pos()).x()).arg(m_view->mapFromGlobal(QCursor::pos()).y());
-
-            //将标签设置到状态栏的右侧
-            m_tmpLabel->setText(pointmsg);
-        }
-    }
-
-    return QWidget::event(e);
 }
 
 void MainWindow::acceptInsertItem()
@@ -614,6 +552,7 @@ void MainWindow::acceptInsertItem()
     {
         control.setMyMode(Mode::InsertItem);
         MyItem* tmpInsertedItem = new MyItem(tmpItem);
+
 //        connect(tmpInsertedItem, &MyItem::selectItem,
 //                this, &MainWindow::myItemSelected);
 
@@ -625,6 +564,8 @@ void MainWindow::acceptInsertItem()
         }
 
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
+//        connect(tmpInsertedItem,SIGNAL(MyItem::insertTextItem(QString)),this,SLOT(MainWindow::acceptInsertTextItem()));
+
         m_scene->addItem(tmpInsertedItem);
 //        qvec_MyItemOnView->push_back(tmpInsertedItem);
         //
@@ -636,8 +577,8 @@ void MainWindow::acceptInsertItem()
         control.setMyMode(Mode::InsertItem);
         DiagramTextItem* tmpInsertedItem = new DiagramTextItem(myTmpDiagramTextItem);
         //未来整体重构，因为之前代码写成了Label放置 对应一个已申请的Item被拖动进的方式，因此
-//        connect(tmpInsertedItem, &DiagramTextItem::lostFocus,
-//                this, &MainWindow::editorLostFocus);
+        connect(tmpInsertedItem, &DiagramTextItem::lostFocus,
+                this, &MainWindow::editorLostFocus);
         connect(tmpInsertedItem, SIGNAL(DiagramTextItem::selectedChange(QGraphicsItem*)),
                 this, SLOT(MainWindow::itemSelected(QGraphicsItem*)));
 
@@ -813,7 +754,7 @@ void MainWindow::acceptRemoveItem(QGraphicsItem* myItem)
 
 void MainWindow::acceptSelectItem(QGraphicsItem* myItem)
 {
-    m_selectedItem = myItem;
+//    m_selectedItem = myItem;
 }
 
 void MainWindow::backgroundButtonGroupClicked(QAbstractButton *button)
@@ -845,6 +786,11 @@ void MainWindow::unselectAllshowedItem()
     }
 }
 
+void MainWindow::generateProject()
+{
+
+}
+
 void MainWindow::showStatus()
 {
     for (auto& qvec_myItemOnView : m_scene->items()) {
@@ -852,17 +798,17 @@ void MainWindow::showStatus()
     }
 }
 
-//void MainWindow::editorLostFocus(DiagramTextItem *item)
-//{
-//    QTextCursor cursor = item->textCursor();
-//    cursor.clearSelection();
-//    item->setTextCursor(cursor);
+void MainWindow::editorLostFocus(DiagramTextItem *item)
+{
+    QTextCursor cursor = item->textCursor();
+    cursor.clearSelection();
+    item->setTextCursor(cursor);
 
-//    if (item->toPlainText().isEmpty()) {
-//        m_scene->removeItem(item);
-//        item->deleteLater();
-//    }
-//}
+    if (item->toPlainText().isEmpty()) {
+        m_scene->removeItem(item);
+        item->deleteLater();
+    }
+}
 
 void MainWindow::acceptAddArrow(Arrow *myItem)
 {
@@ -881,25 +827,16 @@ void MainWindow::acceptAddArrow(Arrow *myItem)
     }
 }
 
-void MainWindow::acceptMoveItem(MyItem *myItem, QPointF oldPos)
+void MainWindow::setItemToggle(QString toggle)
 {
-    m_undoStack->push(new Movecommand(myItem, oldPos));
-}
-
-void MainWindow::acceptSetToggle(QString myToggle)
-{
+    // 创建一个新的MyTextItem 并设置Text为toggle，位置在MyItem最上方
     MyTextItem* myTextItem = new MyTextItem();
-    MyItem* tmpItem = dynamic_cast<MyItem*>(m_scene->selectedItems().first());
-    QPointF offset = tmpItem->rect().center() + QPointF(0,-40);
-    myTextItem->setPos(tmpItem->pos()+offset);
-    myTextItem->setPlainText(myToggle);
+    myTextItem->setPlainText(toggle);
+    MyItem* myItem = dynamic_cast<MyItem*>( m_scene->selectedItems().first());
+    myTextItem->setPos(myItem->pos()+QPointF(0,10));
     m_scene->addItem(myTextItem);
-}
 
-void MainWindow::updateWindow()
-{
-    m_scene->update();
-    m_view->repaint();
+    // 将MyTextItem和Item组合
 }
 
 void MainWindow::testNew()
@@ -909,37 +846,35 @@ void MainWindow::testNew()
 
 void MainWindow::testOpen()
 {
-    m_projectName = QFileDialog::getOpenFileName(this,tr("open File"),"./" , tr("(*.ini)"));
-    if (m_projectName.isEmpty()) return;
-    // 实现在界面中打开该文件名，读取相关参数，并对整个程序进行相关配置
-    openProject();
+
 }
 
 void MainWindow::testSave()
 {
 
-    if (m_projectName.size()<0)
-        m_projectName = QFileDialog::getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.txt)"));
-    saveProject();
-
-    // 默认保存成功
-    control.m_bUpdateFlag = false;
-    this->setWindowTitle(this->windowTitle().remove('*'));
-}
-
-void MainWindow::testSaveAs()
-{
-    saveAsProject();
-    if (m_projectSaveName.size() != 0){
-        control.m_bUpdateFlag = false;
-        this->setWindowTitle(this->windowTitle().remove('*'));
-        m_projectName = m_projectSaveName;
-    }
-
 }
 
 void MainWindow::testCut()
 {
+    qDebug()<<"选中"<<m_scene->selectedItems().size()<<"个Items";
+    QGraphicsItem* tmpGraphicsItem = m_scene->selectedItems().first();
+    MyItem* tmpItem = dynamic_cast<MyItem*>(tmpGraphicsItem);
+    m_scene->removeItem(tmpItem);
+    QByteArray itemData;
+    QDataStream dataStream(&itemData,QIODevice::WriteOnly); //创建数据流
+
+    if (!tmpItem)
+        return;
+
+    // 将Item的相关参数放入到字节数组中
+    dataStream <<tmpItem->color()<<tmpItem->name()<<tmpItem->diagramType()<<tmpItem->point();
+    // 将数据放入QMimeData中
+    QMimeData* mimeData = new QMimeData;
+    // 第四步 将字节数组放入QMimeData中，此处Mime类型由自己定义
+    mimeData->setData("application/myItem",itemData);
+    QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
+    clipBoard->setMimeData(mimeData);
+
 
 }
 
@@ -953,22 +888,25 @@ void MainWindow::testCopy()
     QDataStream dataStream(&itemData,QIODevice::WriteOnly); //创建数据流
 
     // 现在需要先创建一个新的Item
-    tmpItem =  dynamic_cast<MyItem*>(m_scene->selectedItems().first());
-    myTmpDigramTextItem = dynamic_cast<DiagramTextItem*>(m_scene->selectedItems().first());
-    // 创建一个新的Text
+    for (auto item : m_scene->selectedItems())
+    {
+        tmpItem =  dynamic_cast<MyItem*>(item);
+        myTmpDigramTextItem = dynamic_cast<DiagramTextItem*>(m_scene->selectedItems().first());
+        // 创建一个新的Text
 
-    // 目前只能复制MyItem* 类
-    if (!tmpItem)
-        return;
-
-    // 将Item的相关参数放入到字节数组中
-    dataStream <<tmpItem->color()<<tmpItem->name()<<tmpItem->diagramType()<<tmpItem->point();
+        // 目前只能复制MyItem* 类
+        if (!tmpItem)
+            return;
+        // 将Item的相关参数放入到字节数组中
+        dataStream <<tmpItem->color()<<tmpItem->name()<<tmpItem->diagramType()<<tmpItem->point();
+    }
     // 将数据放入QMimeData中
     QMimeData* mimeData = new QMimeData;
     // 第四步 将字节数组放入QMimeData中，此处Mime类型由自己定义
     mimeData->setData("application/myItem",itemData);
     QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
     clipBoard->setMimeData(mimeData);
+
 }
 
 void MainWindow::testPaste()
@@ -988,22 +926,22 @@ void MainWindow::testPaste()
     QString name;
     MyItem::MyType myType;
     QPointF myPoint;
-
-    dataStream >> color >>name >> myType >> myPoint;
     MyItem tmpItem;
-    tmpItem.setColor(color);
-    tmpItem.setName(name);
-    tmpItem.setType(myType);
-    tmpItem.setPoint(myPoint);
+
+    while (!dataStream.atEnd()){
+        dataStream >> color >>name >> myType >> myPoint;
+
+        tmpItem.setColor(color);
+        tmpItem.setName(name);
+        tmpItem.setType(myType);
+        tmpItem.setPoint(myPoint);
+
+        // 同样的，主界面中直接执行槽函数而不需要发射信号
+        acceptClipBoardInsertItem(&tmpItem);
+    }
 
 
-    // 同样的，主界面中直接执行槽函数而不需要发射信号
-    acceptClipBoardInsertItem(&tmpItem);
-}
 
-void MainWindow::testExit()
-{
-    this->close();
 }
 
 void MainWindow::testDelete()
@@ -1036,7 +974,25 @@ void MainWindow::testBrush()
 {
     m_scene->update();
     m_view->repaint();
-//    connect(control.getMyItemWidget(),SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
+}
+
+void MainWindow::testGenerateProject()
+{
+    // 更新界面进度条
+    if (!control.getMyGenerateProjectForm())
+        control.createMyGenerateProjectForm();
+    if (!control.getMyGenerateProjectThread())
+        control.createMyGenerateProjectThread();
+    GenerateProjectForm* form = control.getMyGenerateProjectForm();
+    GenerateProjectThread* thread = control.getMyGenerateProjectThread();
+    control.runMyGenerateProjectThread();
+    form->show();
+//    QTimer* timer = new QTimer(this);
+//    connect(timer,&QTimer::timeout,thread,GenerateProjectThread::);
+    // 生成Project具体实现
+//    m_updateProgressValue++;
+//    thread->setGenerateProgress(m_updateProgressValue);
+    // 生成项目在generateProject中实现
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item)
@@ -1064,435 +1020,4 @@ void MainWindow::myItemSelected()
     ui->actionDelete->setEnabled(true);
 }
 
-void MainWindow::acceptDataChanged()
-{
-    if (!control.m_bUpdateFlag){
-        control.m_bUpdateFlag = true;
-        setWindowTitle(windowTitle()+"*");
-    }
-}
 
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         左旋（逆时针）旋转90°
-* @func          testLeftRotate()
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-20
-**********************************************/
-void MainWindow::testLeftRotate()
-{
-    if (m_scene->selectedItems().isEmpty())
-        return;
-
-    QGraphicsItem *selectedItem = m_scene->selectedItems().first();
-    if( selectedItem->type()==QGraphicsItemGroup::Type ) return;
-    selectedItem->setRotation(-90+selectedItem->rotation());
-    m_scene->update();
-}
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         摘要
-* @func          testRightRotate
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-20
-**********************************************/
-void MainWindow::testRightRotate()
-{
-    if (m_scene->selectedItems().isEmpty())
-        return;
-
-    QGraphicsItem *selectedItem = m_scene->selectedItems().first();
-    if( selectedItem->type()==QGraphicsItemGroup::Type ) return;
-    selectedItem->setRotation(90+selectedItem->rotation());
-    m_scene->update();
-}
-
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         实现图元前置
-* @func          testToFront
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-20
-**********************************************/
-void MainWindow::testToFront()
-{
-    if (m_scene->selectedItems().isEmpty())
-        return;
-
-    QGraphicsItem *selectedItem = m_scene->selectedItems().first();
-    QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
-
-    qreal zValue = 0;
-    foreach (QGraphicsItem *item, overlapItems) {
-        if (item->zValue() >= zValue && item->type() == MyItem::Type)
-            zValue = item->zValue() + 0.1;
-    }
-    selectedItem->setZValue(zValue);
-}
-
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         实现图元后置
-* @func          testToBack
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-20
-**********************************************/
-void MainWindow::testToBack()
-{
-    if (m_scene->selectedItems().isEmpty())
-        return;
-
-    QGraphicsItem *selectedItem = m_scene->selectedItems().first();
-    QList<QGraphicsItem *> overlapItems = selectedItem->collidingItems();
-
-    qreal zValue = 0;
-    foreach (QGraphicsItem *item, overlapItems) {
-        if (item->zValue() <= zValue && item->type() == MyItem::Type)
-            zValue = item->zValue() - 0.1;
-    }
-    selectedItem->setZValue(zValue);
-}
-
-void MainWindow::testToGroup()
-{
-    int cnt=m_scene->selectedItems().count();
-    if (cnt>1)
-    {
-        QGraphicsItemGroup* group =new QGraphicsItemGroup; //创建组合
-        m_scene->addItem(group); //组合添加到场景中
-
-        for (int i=0;i<cnt;i++)
-        {
-            QGraphicsItem* item=m_scene->selectedItems().at(0);
-            item->setSelected(false); //清除选择虚线框
-            item->clearFocus();
-            group->addToGroup(item); //添加到组合
-        }
-
-        group->setFlags(QGraphicsItem::ItemIsMovable| QGraphicsItem::ItemIsSelectable| QGraphicsItem::ItemIsFocusable);
-        m_scene->clearSelection();
-        group->setSelected(true);
-    }
-}
-
-void MainWindow::testGroupBreak()
-{
-    int cnt=m_scene->selectedItems().count();
-    if (cnt==1)
-    {
-        auto item = m_scene->selectedItems().first();
-        if( item->type()!=QGraphicsItemGroup::Type )
-            return;
-        auto group=(QGraphicsItemGroup*)item;
-        m_scene->destroyItemGroup(group);
-    }
-}
-
-void MainWindow::testBold()
-{
-    //    QFont font = fontCombo->currentFont();
-    //    font.setPointSize(fontSizeCombo->currentText().toInt());
-    //    font.setWeight(boldAction->isChecked() ? QFont::Bold : QFont::Normal);
-    //    font.setItalic(italicAction->isChecked());
-    //    font.setUnderline(underlineAction->isChecked());
-
-    //    scene->setFont(font);
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
-
-    if (selectedTextItem){
-        // 未来按钮改成Checked形式
-        QFont font = selectedTextItem->font();
-        font.setWeight(QFont::Bold);
-
-        selectedTextItem->setFont(font);
-        m_scene->update();
-    }
-}
-
-void MainWindow::testItalic()
-{
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
-
-    if (selectedTextItem){
-        QFont font = selectedTextItem->font();
-        font.setItalic(true);
-        selectedTextItem->setFont(font);
-        m_scene->update();
-    }
-}
-
-void MainWindow::testUnderLine()
-{
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
-
-    if (selectedTextItem){
-        QFont font = selectedTextItem->font();
-        font.setUnderline(true);
-        selectedTextItem->setFont(font);
-        m_scene->update();
-    }
-}
-
-void MainWindow::testUndo()
-{
-
-}
-
-void MainWindow::testRedo()
-{
-
-}
-
-void MainWindow::testShowStatus()
-{
-    for (auto& qvec_myItemOnView: m_scene->items() ){
-        qDebug() << qvec_myItemOnView->isSelected() << qvec_myItemOnView->pos();
-    }
-}
-
-
-/**
- * @brief MainWindow::sceneScaleChanged
- * 响应视图缩放功能
- * @param scale
- */
-void MainWindow::sceneScaleChanged(const QString &scale)
-{
-    double newScale = scale.left(scale.indexOf(tr("%"))).toDouble() / 100.0;
-    QMatrix oldMatrix = this->m_view->matrix();
-
-    this->m_view->resetMatrix();
-    this->m_view->translate(oldMatrix.dx(), oldMatrix.dy());
-    this->m_view->scale(newScale, newScale);
-    m_view->update();
-}
-
-void MainWindow::do_timer_timeout()
-{
-//    m_loadWidget->close();
-}
-
-
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         打开工程
-* @func          openProject
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-16
-**********************************************/
-void MainWindow::openProject()
-{
-
-    QSettings settings (m_projectName,QSettings::IniFormat);
-
-    m_scene->clear();
-    int cnt = 0;
-    QMap<QString,MyItem*> map_item;
-    while(1){
-        QString item = "item" + QString::number(++cnt);
-        if (!settings.value(item+"/type").toInt())
-            break;
-        int type = settings.value(item+"/type").toInt();
-        if (type == MyItem::Type ){
-            int myType = settings.value(item+"/myType").toInt();
-            auto item0 = new MyItem();
-            QColor color;
-            if (settings.value(item+"/Color").canConvert<QColor>())
-            {
-                color = settings.value(item+"/Color").value<QColor>();
-                item0->setColor(color);
-            }
-            item0->setType(MyItem::MyType(myType));
-            item0->setPos(settings.value(item+"/pos").toPointF());
-            item0->setRotation(settings.value(item+"/degree").toDouble());
-            item0->setName(settings.value(item+"/name").toString());
-            item0->setPoint(settings.value(item + "/point").toPointF());
-            item0->setToggle(settings.value(item+"/toggle").toString());
-            m_scene->addItem(item0);
-            map_item.insert(item,item0);
-        }
-        else if (type == Arrow::Type){
-            auto startItem = map_item.value(settings.value(item+"/startItem").toString());
-            auto endItem = map_item.value(settings.value(item+"/endItem").toString());
-            if (startItem == nullptr || endItem == nullptr ) continue;
-            auto arrow = new Arrow(startItem,endItem);
-            arrow->setStartPoint(settings.value(item+"/startPoint").toPointF());
-            arrow->setEndPoint(settings.value(item+"/endPoint").toPointF());
-            startItem->addArrow(arrow);
-            endItem->addArrow(arrow);
-            arrow->setZValue(-1000.0);
-            m_scene->addItem(arrow);
-            arrow->updatePosition();
-        }
-        else if (type == MyTextItem::Type){
-            auto item0 = new MyTextItem();
-            item0->setPos(settings.value(item+"/pos").toPointF());
-            item0->setRotation(settings.value(item+"degree").toDouble());
-            item0->setPlainText(QString::fromLocal8Bit( settings.value(item+"/text").toByteArray() ));
-            m_scene->addItem(item0);
-        }
-    }
-
-}
-
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         保存工程
-* @func          saveProject
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-16
-**********************************************/
-void MainWindow::saveProject()
-{
-    QSettings settings(m_projectName,QSettings::IniFormat);
-    settings.setIniCodec("utf-8");
-    settings.clear();
-    int cnt = 0;
-
-    QMap<QGraphicsItem*,QString> map_item;
-    for (auto item : m_scene->items()){
-        QString str = "item" + QString::number(++cnt);
-        settings.beginGroup(str);
-        settings.setValue("pos",item->pos());
-        settings.setValue("type",item->type());
-        settings.setValue("degree",item->rotation());
-        map_item.insert(item,str);
-        if (item->type()==Arrow::Type){
-            auto ln = (Arrow*)item;
-            settings.setValue("Arrow",ln->line());
-            settings.setValue("startItem",map_item.value(ln->startItem()));
-            settings.setValue("endItem",map_item.value(ln->endItem()));
-            settings.setValue("startPoint",ln->startPoint());
-            settings.setValue("endPoint",ln->endPoint());
-        }
-        else if (item->type()==MyItem::Type){
-            auto ln =(MyItem*)item;
-            settings.setValue("Color",ln->color());
-            settings.setValue("MyType",ln->diagramType());
-            settings.setValue("name",ln->name());
-            settings.setValue("point",ln->point());
-            settings.setValue("toggle",ln->toggle());
-        }
-        else if (item->type()==MyTextItem::Type){
-            auto text = (MyTextItem*)item;
-            settings.setValue("text",text->toPlainText().toLocal8Bit());
-        }
-        settings.endGroup();
-    }
-}
-
-
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         工程另存为
-* @func          saveAsProject
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-16
-**********************************************/
-void MainWindow::saveAsProject()
-{
-    QFileDialog fileDialog;
-    m_projectSaveName = fileDialog.getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.ini)"));
-    if(m_projectSaveName == "")
-    {
-        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
-        return;
-    }
-    else
-    {
-        // TODO:这里将界面的相关参数写入我们给的文件
-        QSettings settings(m_projectSaveName,QSettings::IniFormat);
-        settings.setIniCodec("utf-8");
-        settings.clear();
-        int cnt = 0;
-
-        QMap<QGraphicsItem*,QString> map_item;
-        for (auto item : m_scene->items()){
-            QString str = "item" + QString::number(++cnt);
-            settings.beginGroup(str);
-            settings.setValue("pos",item->pos());
-            settings.setValue("type",item->type());
-            settings.setValue("degree",item->rotation());
-            map_item.insert(item,str);
-            if (item->type()==Arrow::Type){
-                auto ln = (Arrow*)item;
-                settings.setValue("Arrow",ln->line());
-                settings.setValue("startItem",map_item.value(ln->startItem()));
-                settings.setValue("endItem",map_item.value(ln->endItem()));
-                settings.setValue("startPoint",ln->startPoint());
-                settings.setValue("endPoint",ln->endPoint());
-            }
-            else if (item->type()==MyItem::Type){
-                auto ln =(MyItem*)item;
-                settings.setValue("Color",ln->color());
-                settings.setValue("MyType",ln->diagramType());
-                settings.setValue("name",ln->name());
-                settings.setValue("point",ln->point());
-                settings.setValue("toggle",ln->toggle());
-            }
-            else if (item->type()==MyTextItem::Type){
-                auto text = (MyTextItem*)item;
-                settings.setValue("text",text->toPlainText().toLocal8Bit());
-            }
-            settings.endGroup();
-        }
-        //        QTextStream textStream(&file);
-
-        /////////
-
-        QMessageBox::warning(this,tr("提示"),tr("保存文件成功"));
-    }
-}
-
-
-
-void MainWindow::loadStyle(const QString &qssFile)
-{
-    //开启计时
-    QElapsedTimer time;
-    time.start();
-
-    //加载样式表
-    QString qss;
-    QFile file(qssFile);
-    if (file.open(QFile::ReadOnly)) {
-        //用QTextStream读取样式文件不用区分文件编码 带bom也行
-        QStringList list;
-        QTextStream in(&file);
-        //in.setCodec("utf-8");
-        while (!in.atEnd()) {
-            QString line;
-            in >> line;
-            list << line;
-        }
-
-        file.close();
-        qss = list.join("\n");
-        QString paletteColor = qss.mid(20, 7);
-        qApp->setPalette(QPalette(paletteColor));
-        //用时主要在下面这句
-        qApp->setStyleSheet(qss);
-    }
-
-    qDebug() << "用时:" << time.elapsed();
-}

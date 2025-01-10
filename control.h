@@ -2,8 +2,12 @@
 #define CONTROL_H
 #include "global.h"
 #include "myitemwidget.h"
+#include "generateprojectform.h"
+#include "generateprojectthread.h"
+
 
 enum Mode { InsertItem, InsertLine, InsertText, MoveItem,nullItem};
+
 class Control : public QObject
 {
     Q_OBJECT
@@ -18,17 +22,29 @@ public:
     void setMyItemWidget(MyItemWidget *value);
     void createMyItemWidget();
     void destroyMyItemWidget();
-    void showMyItemWidget();    //显示属性框
-    void showProperty(MyItem* myItem);
+    void createMyGenerateProjectForm();
+    void destroyMyGenerateProjectForm();
 
-    bool m_bUpdateFlag;   // 表示界面是否更新过
+    GenerateProjectForm *getMyGenerateProjectForm() const;
+    void setMyGenerateProjectForm(GenerateProjectForm *value);
+
+    void createMyGenerateProjectThread();
+    void destroyMyGenerateProjectThread();
+    GenerateProjectThread *getMyGenerateProjectThread() const;
+    void setMyGenerateProjectThread(GenerateProjectThread *value);
+    void runMyGenerateProjectThread();
+
 private:
     Mode m_myMode;
     MyItemWidget* m_myItemWidget;
-
+    GenerateProjectForm* m_myGenerateProjectForm;
+    GenerateProjectThread* m_myGenerateProjectThread;
 signals:
     void setMyDragMode(); // 向View发送模式
-    void updateWindow();
+
+
+public slots:
+    void closeMyGenerateProjectForm();
 };
 
 #endif // CONTROL_H

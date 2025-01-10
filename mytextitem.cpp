@@ -49,7 +49,22 @@ void MyTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event){
         }
     }
 }
+
+void MyTextItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+
+}
 void MyTextItem::keyPressEvent(QKeyEvent *event){
-    QGraphicsTextItem::keyPressEvent(event);
+
+    if (event->key() == Qt::Key_Down)
+        moveBy(0,10);
+    if (event->key() == Qt::Key_Up)
+        moveBy(0,-10);
+    if (event->key() == Qt::Key_Left)
+        moveBy(-10,0);
+    if (event->key() == Qt::Key_Right)
+        moveBy(10,0);
+
+    return QGraphicsTextItem::keyPressEvent(event);
 }
 

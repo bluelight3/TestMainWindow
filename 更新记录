@@ -11,7 +11,14 @@
 
 
 
+需求：
+// 使得在图元属性框点击确定的时候 将配置的属性设置到界面上，在相应图元上显示一个TextItem(该TextItem属于Item)
+// 添加一个显示进度条，例如配置的
 
 // 注意：
 //未来整体重构，因为之前代码写成了Label放置 对应一个已申请的Item 然后单击的时候这个Item再成为m_selectedItem再调用dropevent，因此必须生成一个新的
 tmpItem 而相关的信号槽作用于这个新的tmpItem上，目前先按这个框架写
+
+// 计划框架：
+// 用一个Control类管理主界面之外的所有显示界面项(view,scene,itemWidget,generateWidget,mode等)，并定时刷新view，主界面需要向场景
+中添加图元时，需要从Control类中获取相关view,scene，并向scene中添加item

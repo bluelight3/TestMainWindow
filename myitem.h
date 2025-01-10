@@ -7,7 +7,6 @@
 #include "global.h"
 #include "myitemwidget.h"
 #include "arrow.h"
-#include "mytextitem.h"
 
 class Arrow;
 
@@ -32,7 +31,6 @@ public:
     QPixmap image() const;
     QString name() const;
     QPointF point() const;
-    QRect rect() const;
     MyType diagramType() const { return myDiagramType; }
     bool selectedStatus();
     void addArrow(Arrow *arrow);
@@ -44,18 +42,16 @@ public:
     QString toggle() const;
     void setToggle(const QString &toggle);
 
-
-
 private:
     QColor brushColor;                  // 该Item绘制颜色
     MyType myDiagramType;               // 该Item的类型
     QString m_name;                     // 该Item的名称
-    QPointF m_point;                    // 该Item相对scene的位置  实际暂不使用，可以用->pos()代替
+    QPointF m_point;                    // 该Item相对scene的位置
     QString m_toggle;                   // 关于这个Item的注释，描述信息
     QVector<Arrow*> m_linkedArrow;      // 该Item所有相连的箭头
     QRect m_rect;                       // 图元外接矩形;
     int m_length;                       // 图元边长(如果使用的话)
-    MyTextItem* m_attachedTextItem;     // 附带TextItem (用于设置注释)
+
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
