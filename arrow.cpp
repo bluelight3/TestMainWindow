@@ -91,7 +91,7 @@ QPainterPath Arrow::shape() const
 //! [3]
 void Arrow::updatePosition()
 {
-    QLineF line(myStartItem->pos(), myEndItem->pos());
+    QLineF line(mapFromItem(myStartItem, 0, 0), mapFromItem(myEndItem, 0, 0));
     setLine(line);
 }
 //! [3]
@@ -111,11 +111,26 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     painter->setPen(myPen);
     painter->setBrush(myColor);
 //! [4] //! [5]
+//!
+//!
+    if( point_start.isNull() )
+        point_start = myStartItem->getLinePoint();
+    if( point_end.isNull() )
+        point_end = myEndItem->getLinePoint();
 
     QLineF centerLine(myStartItem->pos(), myEndItem->pos());
 
     QPointF p1 = myStartItem->pos()+myStartItem->boundingRect().center();
     QPointF p2 = myEndItem->pos()+myEndItem->boundingRect().center();
+
+    QTransform transform;
+    transform.rotate( myStartItem->rotation() );
+    p1 += transform.map(point_start);
+
+    QTransform transform2;
+    transform2.rotate( myEndItem->rotation() );
+    p2 += transform2.map(point_end);
+
 
     QPointF pCorner = QPointF(p2.x(),p1.y());
     QLineF line1 = QLineF(p1,pCorner);
@@ -153,14 +168,14 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     painter->drawLine(line2);
 //    painter->drawPolygon(arrowHead);
     if (isSelected()) {
-        painter->setPen(QPen(myColor, 1, Qt::DashLine));
+        painter->setPen(QPen(myColor, 2, Qt::DashLine));
 //        QLineF myLine = line();
         line1.translate(0, 4.0);
         painter->drawLine(line1);
         line1.translate(0,-8.0);
         painter->drawLine(line1);
 
-        painter->setPen(QPen(myColor, 1, Qt::DashLine));
+        painter->setPen(QPen(myColor, 2, Qt::DashLine));
         line2.translate(4.0,0);
         painter->drawLine(line2);
         line2.translate(-8.0,0);

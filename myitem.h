@@ -32,9 +32,11 @@ public:
     QString name() const;
     QPointF point() const;
     MyType diagramType() const { return myDiagramType; }
+    QPointF getLinePoint(){ return isLeft_Right ? point_left : point_right; }
+    void setLinePoint(QPointF p);
     bool selectedStatus();
     void addArrow(Arrow *arrow);
-
+    QPixmap type2Image(MyType myType);
 
     void setLength(int length);
     void setRect(const QRect &rect);
@@ -51,6 +53,12 @@ private:
     QVector<Arrow*> m_linkedArrow;      // 该Item所有相连的箭头
     QRect m_rect;                       // 图元外接矩形;
     int m_length;                       // 图元边长(如果使用的话)
+    QPixmap m_image;                    // 图元图像(如果使用的话)
+
+    // 左右点，表示图元连线用
+    QPointF point_left;
+    QPointF point_right;
+    bool isLeft_Right = false;
 
 
 protected:

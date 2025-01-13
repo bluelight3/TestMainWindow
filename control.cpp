@@ -3,8 +3,14 @@
 
 Control::Control()
 {
-
+    m_myItems = new QVector<MyItem *>;
     m_myMode = nullItem;
+}
+
+Control::~Control()
+{
+    if (m_myItems) delete m_myItems;
+    if (m_myItemWidget) delete m_myItemWidget;
 }
 
 Mode Control::getMyMode() const
@@ -93,3 +99,9 @@ void Control::runMyGenerateProjectThread()
 {
     m_myGenerateProjectThread->start();
 }
+
+QVector<MyItem *> *Control::getMyItems() const
+{
+    return m_myItems;
+}
+

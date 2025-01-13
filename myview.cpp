@@ -44,6 +44,8 @@ void MyView::mousePressEvent(QMouseEvent *event)
         MyItem* firstSelectItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
         m_line = new QGraphicsLineItem(QLineF(event->pos(),
                                               event->pos()));
+        m_line->setCacheMode(QGraphicsItem::NoCache); // 关闭缓存
+        m_line->setOpacity(1.0); // 设置完全不透明
         m_line->setPen(QPen(Qt::black, 2));
 
     }
@@ -56,11 +58,13 @@ void MyView::mouseMoveEvent(QMouseEvent *event)
         QLineF newLine(m_line->line().p1(), event->pos());
         m_line->setLine(newLine);
     } else if (control.getMyMode() == Mode::MoveItem) {
-        return QGraphicsView::mouseMoveEvent(event);
+        QGraphicsView::mouseMoveEvent(event);
+
     }
     else{
-        return QGraphicsView::mouseMoveEvent(event);
+        QGraphicsView::mouseMoveEvent(event);
     }
+    update();
 }
 
 void MyView::mouseReleaseEvent(QMouseEvent *event)
@@ -74,8 +78,8 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
         if (endItems.count() && endItems.first() == m_line)
             endItems.removeFirst();
 
-//        emit removeItem(m_line);
-        delete m_line;
+        emit removeItem(m_line);
+
         //! [11] //! [12]
 
         if (startItems.count() > 0 && endItems.count() > 0 &&
@@ -84,13 +88,24 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
                 startItems.first() != endItems.first()) {
             MyItem *startItem = qgraphicsitem_cast<MyItem  *>(startItems.first());
             MyItem *endItem = qgraphicsitem_cast<MyItem  *>(endItems.first());
+
+
+            auto p1 = m_line->mapToScene( m_line->line().p1() );
+            auto p2 = m_line->mapToScene( m_line->line().p2() );
+            startItem->setLinePoint( p1 );
+            endItem->setLinePoint( p2 );
+
+
+
+
+
             Arrow *arrow = new Arrow(startItem, endItem);
             arrow->setColor(Qt::black);
             startItem->addArrow(arrow);
             endItem->addArrow(arrow);
             arrow->setZValue(-1000.0);
-            emit addArrow(arrow);
             arrow->updatePosition();
+            emit addArrow(arrow);
         }
 
 
@@ -323,15 +338,13 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
 
         // 获取所有MyItem图元名称
 
-        for (int i = 0; i < scene()->items().size();i++){
-            MyItem* tmpItem = dynamic_cast<MyItem*>(scene()->items()[i]);
-            if (tmpItem){
-                QAction* tmpAddToItemAction = subMenu.addAction(tmpItem->name());
-                if (tmpItem->childItems().size()>0){
-                    tmpAddToItemAction->setEnabled(false);
-                }
-                addToItemActions.append(tmpAddToItemAction);
+        for (int i = 0; i < control.getMyItems()->size();i++){
+            MyItem* tmpItem = control.getMyItems()->at(i);
+            QAction* tmpAddToItemAction = subMenu.addAction(tmpItem->name());
+            if (tmpItem->childItems().size()>0){
+                tmpAddToItemAction->setEnabled(false);
             }
+            addToItemActions.append(tmpAddToItemAction);
         }
         menu.addMenu(&subMenu);
 
@@ -384,10 +397,15 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             emit removeItem(selectedTextItem);  // 删除选中Item
             // 这里实现删除操作
         }
-        else if (addToItemActions.indexOf(selectedAction) > 0) {
+        else if (addToItemActions.indexOf(selectedAction) >= 0) {
             int index = addToItemActions.indexOf(selectedAction);
-            selectedTextItem->setParentItem(scene()->items()[index]);
-//            emit removeItem(selectedTextItem);  //
+            // 找到所有的Item项
+
+            selectedTextItem->setParentItem((*control.getMyItems())[index]);
+            selectedTextItem->setPos(QPointF(-60,-80));
+            selectedTextItem->setZValue(selectedItem->zValue()+1);
+            qDebug() << "set item "<< index << "as a child of " << (*control.getMyItems())[index]->name();
+            //            emit removeItem(selectedTextItem);  //
             // 这里实现将该TextItem设置为其子Item的操作
         }
 

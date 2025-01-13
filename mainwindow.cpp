@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //设置一个单独接收拖动标签
     m_label = new QLabel(this);
-    QPixmap pix(":/images/new.png");
+    QPixmap pix(":/images/circuit/capacitor.png");
+    pix = pix.scaled(60,60,Qt::KeepAspectRatio);
     m_label->setPixmap(pix);
     m_label->resize(pix.size());
     m_label->move(100,100);
@@ -35,7 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_label->installEventFilter(this);
 
     m_label2 = new QLabel(this);
-    QPixmap pix2(":/images/copy.png");
+    QPixmap pix2(":/images/circuit/inductor.png");
+    pix2 = pix2.scaled(60,60,Qt::KeepAspectRatio);
     m_label2->setPixmap(pix2);
     m_label2->resize(pix2.size());
     m_label2->move(100,100);
@@ -53,8 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_labelText2 = new QLabel(this);
     QPixmap pix4(":/images/textpointer.png");
-    m_labelText2->setPixmap(pix3);
-    m_labelText2->resize(pix3.size());
+    m_labelText2->setPixmap(pix4);
+    m_labelText2->resize(pix4.size());
 //    m_labelText->move(100,100);
     m_labelText2->setAttribute(Qt::WA_DeleteOnClose);
     m_labelText2->installEventFilter(this);
@@ -136,6 +138,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(this,SIGNAL(setMyDragMode(Mode)),m_view,SLOT(acceptSetMyDragMode(Mode)));
     connect(&control,SIGNAL(setMyDragMode()),m_view,SLOT(acceptSetMyDragMode()));
     connect(ui->actionBrush,SIGNAL(triggered()),this,SLOT(testBrush()));
+    connect(ui->actionSelectAll,SIGNAL(triggered()),this,SLOT(testSelectAll()));
 
 //    m_view = ui->graphicsView;
 
@@ -155,8 +158,6 @@ MainWindow::MainWindow(QWidget *parent)
     //    widget->show();
 
     // 模糊效果
-
-    ui->actionDelete->setEnabled(true);
 
 
 }
@@ -191,9 +192,11 @@ void MainWindow::createToolBox()
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(m_label,0,0);
     layout->addWidget(m_label2,0,1);
-    layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 1, 0);
-    layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),1, 1);
-    layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 2, 0);
+
+
+//    layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 1, 0);
+//    layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),1, 1);
+//    layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 2, 0);
     // added
     //    layout->addWidget(createCellWidget(tr("myitem1"),DiagramItem::MyTest1),3,0);
     //    layout->addWidget(createCellWidget(tr("myitem2"),DiagramItem::MyTest2),3,1);
@@ -205,20 +208,20 @@ void MainWindow::createToolBox()
 
     //! [21]
 
-    QToolButton *textButton = new QToolButton;
-    textButton->setCheckable(true);
-    buttonGroup->addButton(textButton, InsertTextButton);
-    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
-    textButton->setIconSize(QSize(50, 50));
-    QGridLayout *textLayout = new QGridLayout;
-    textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
-    textLayout->addWidget(new QLabel(tr("Text")), 1, 0, Qt::AlignCenter);
-    QWidget *textWidget = new QWidget;
-    textWidget->setLayout(textLayout);
-    layout->addWidget(textWidget, 2, 1);
+//    QToolButton *textButton = new QToolButton;
+//    textButton->setCheckable(true);
+//    buttonGroup->addButton(textButton, InsertTextButton);
+//    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
+//    textButton->setIconSize(QSize(50, 50));
+//    QGridLayout *textLayout = new QGridLayout;
+//    textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
+//    textLayout->addWidget(new QLabel(tr("Text")), 1, 0, Qt::AlignCenter);
+//    QWidget *textWidget = new QWidget;
+//    textWidget->setLayout(textLayout);
+//    layout->addWidget(textWidget, 2, 1);
 
-    layout->addWidget(m_labelText,3,0);
-    layout->addWidget(m_labelText2,3,1);
+    layout->addWidget(m_labelText,1,0);
+    layout->addWidget(m_labelText2,1,1);
 
     layout->setRowStretch(3, 10);
     layout->setColumnStretch(2, 10);
@@ -251,7 +254,7 @@ void MainWindow::createToolBox()
     toolBox = new QToolBox;
     toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
     toolBox->setMinimumWidth(itemWidget->sizeHint().width());
-    toolBox->addItem(itemWidget, tr("Basic Flowchart Shapes"));
+    toolBox->addItem(itemWidget, tr("Basic circuit Shapes"));
     toolBox->addItem(backgroundWidget, tr("Backgrounds"));
 
 
@@ -360,7 +363,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
             ui->actionDelete->setEnabled(true);
         }
         else{
-//            ui->actionDelete->setEnabled(false);
+            ui->actionDelete->setEnabled(false);
         }
     }
     // 第一步：获取图片
@@ -566,6 +569,7 @@ void MainWindow::acceptInsertItem()
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
 //        connect(tmpInsertedItem,SIGNAL(MyItem::insertTextItem(QString)),this,SLOT(MainWindow::acceptInsertTextItem()));
 
+        control.getMyItems()->push_back(tmpInsertedItem);
         m_scene->addItem(tmpInsertedItem);
 //        qvec_MyItemOnView->push_back(tmpInsertedItem);
         //
@@ -589,8 +593,6 @@ void MainWindow::acceptInsertItem()
         qDebug()<<"newpos:"<<m_view->mapFromGlobal(QCursor::pos());
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
         m_scene->addItem(tmpInsertedItem);
-        qvec_MyItemOnView->push_back(tmpInsertedItem);
-
     }
     else if (myTmpTextItem) {
         MyTextItem* tmpInsertedItem = new MyTextItem(myTextItem);
@@ -601,7 +603,6 @@ void MainWindow::acceptInsertItem()
         qDebug()<<"newpos:"<<m_view->mapFromGlobal(QCursor::pos());
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
         m_scene->addItem(tmpInsertedItem);
-        qvec_MyItemOnView->push_back(tmpInsertedItem);
     }
 
     qDebug()<<m_view->mapFromParent(this->mapFromGlobal(QCursor::pos()));
@@ -628,7 +629,6 @@ void MainWindow::acceptInsertTextItem()
         qDebug()<<"newpos:"<<m_view->mapFromGlobal(QCursor::pos());
         tmpInsertedItem->setPos(m_selectedItem->pos()+QPointF(0,10));
         m_scene->addItem(tmpInsertedItem);
-        qvec_MyItemOnView->push_back(tmpInsertedItem);
     }
 
 
@@ -640,9 +640,6 @@ void MainWindow::acceptClipBoardInsertItem(QPointF point)
 {
     MyItem* tmpItem;
     DiagramTextItem* myTmpDigramTextItem;
-
-
-
 
     // 暂时复用selectItem作为粘贴Item，并显示在界面上
     if (!m_selectedItem)
@@ -709,8 +706,8 @@ void MainWindow::acceptClipBoardInsertItem(QGraphicsItem* myItem)
 
         MyItem* tmpInsertedItem = new MyItem(tmpItem);
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
+        control.getMyItems()->push_back(tmpItem);
         m_scene->addItem(tmpInsertedItem);
-        qvec_MyItemOnView->push_back(tmpInsertedItem);
     }
     else if (myTmpDigramTextItem){
         // 设置自己的名字?
@@ -796,6 +793,7 @@ void MainWindow::showStatus()
     for (auto& qvec_myItemOnView : m_scene->items()) {
         qDebug() << qvec_myItemOnView->isSelected() << qvec_myItemOnView->pos();
     }
+    qDebug() << " curr scene has " << m_scene->items().size() << "items";
 }
 
 void MainWindow::editorLostFocus(DiagramTextItem *item)
@@ -810,10 +808,10 @@ void MainWindow::editorLostFocus(DiagramTextItem *item)
     }
 }
 
-void MainWindow::acceptAddArrow(Arrow *myItem)
+void MainWindow::acceptAddArrow(Arrow *myArrow)
 {
     Arrow * tmpArrow;
-    tmpArrow   = dynamic_cast<Arrow*>(myItem);
+    tmpArrow   = dynamic_cast<Arrow*>(myArrow);
 
     if (tmpArrow)
     {
@@ -830,11 +828,16 @@ void MainWindow::acceptAddArrow(Arrow *myItem)
 void MainWindow::setItemToggle(QString toggle)
 {
     // 创建一个新的MyTextItem 并设置Text为toggle，位置在MyItem最上方
+    // 并设置为MyItem的子图元
     MyTextItem* myTextItem = new MyTextItem();
     myTextItem->setPlainText(toggle);
     MyItem* myItem = dynamic_cast<MyItem*>( m_scene->selectedItems().first());
     myTextItem->setPos(myItem->pos()+QPointF(0,10));
     m_scene->addItem(myTextItem);
+    myTextItem->setParentItem(myItem);
+
+
+
 
     // 将MyTextItem和Item组合
 }
@@ -875,7 +878,6 @@ void MainWindow::testCut()
     QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
     clipBoard->setMimeData(mimeData);
 
-
 }
 
 void MainWindow::testCopy()
@@ -898,7 +900,7 @@ void MainWindow::testCopy()
         if (!tmpItem)
             return;
         // 将Item的相关参数放入到字节数组中
-        dataStream <<tmpItem->color()<<tmpItem->name()<<tmpItem->diagramType()<<tmpItem->point();
+        dataStream <<tmpItem->color()<<tmpItem->name()<<tmpItem->diagramType()<<tmpItem->point()<<tmpItem->toggle();
     }
     // 将数据放入QMimeData中
     QMimeData* mimeData = new QMimeData;
@@ -926,22 +928,21 @@ void MainWindow::testPaste()
     QString name;
     MyItem::MyType myType;
     QPointF myPoint;
+    QString toggle;
     MyItem tmpItem;
 
     while (!dataStream.atEnd()){
-        dataStream >> color >>name >> myType >> myPoint;
+        dataStream >> color >>name >> myType >> myPoint >> toggle;
 
         tmpItem.setColor(color);
         tmpItem.setName(name);
         tmpItem.setType(myType);
         tmpItem.setPoint(myPoint);
+        tmpItem.setToggle(toggle);
 
         // 同样的，主界面中直接执行槽函数而不需要发射信号
         acceptClipBoardInsertItem(&tmpItem);
     }
-
-
-
 }
 
 void MainWindow::testDelete()
@@ -976,6 +977,12 @@ void MainWindow::testBrush()
     m_view->repaint();
 }
 
+void MainWindow::testSelectAll()
+{
+    for (auto item : m_scene->items())
+        item->setSelected(true);
+}
+
 void MainWindow::testGenerateProject()
 {
     // 更新界面进度条
@@ -994,6 +1001,8 @@ void MainWindow::testGenerateProject()
 //    thread->setGenerateProgress(m_updateProgressValue);
     // 生成项目在generateProject中实现
 }
+
+
 
 void MainWindow::itemSelected(QGraphicsItem *item)
 {

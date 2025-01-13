@@ -85,6 +85,9 @@ private:
     MyItem *myEndItem;
     QPolygonF arrowHead;
     QColor myColor = Qt::black;
+    QPointF point_start;
+    QPointF point_end;
+
 };
 //! [0]
 

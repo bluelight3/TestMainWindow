@@ -14,6 +14,7 @@ class Control : public QObject
 
 public:
     Control();
+    ~Control();
 
     Mode getMyMode() const;
     void setMyMode(const Mode &value);
@@ -34,11 +35,17 @@ public:
     void setMyGenerateProjectThread(GenerateProjectThread *value);
     void runMyGenerateProjectThread();
 
+
+
+    QVector<MyItem *> *getMyItems() const;
+
 private:
     Mode m_myMode;
     MyItemWidget* m_myItemWidget;
     GenerateProjectForm* m_myGenerateProjectForm;
     GenerateProjectThread* m_myGenerateProjectThread;
+    QVector<MyItem *> *m_myItems;       //目前所创建的所有Items 现在交由controls管理
+
 signals:
     void setMyDragMode(); // 向View发送模式
 

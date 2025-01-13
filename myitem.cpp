@@ -7,6 +7,7 @@
 #include <QMenu>
 #include <QDebug>
 #include "control.h"
+#include "mytextitem.h"
 
 extern Control control;
 MyItem::MyItem()
@@ -14,8 +15,18 @@ MyItem::MyItem()
     brushColor = Qt::red;
     m_name = "defaultName";
     myDiagramType = MyType::MyTest1;
+    m_toggle = "defaultToggle";
     m_point = QPointF(0,0);
-    m_rect = QRect(-40,-40,40,40);
+    m_rect = QRect(-120,-120,120,120);
+    m_image = type2Image(myDiagramType);
+
+    point_left = QPoint(-60, 0 );
+    point_right = QPoint(60, 0 );
+
+//    QPixmap pixmap(":/images/default.png");
+//    m_image = pixmap;
+
+
 
     setFlag(QGraphicsItem::ItemIsFocusable  ); // 如果要用键盘控制图形项，就必须使图形项可以获得焦点，即设置该标志
     setFlag(QGraphicsItem::ItemIsMovable);     // 如果要想用鼠标控制图形项，那么必须先设置该标志
@@ -30,8 +41,13 @@ MyItem::MyItem(MyItem *myItem)
     brushColor = myItem->brushColor;
     m_name = myItem->m_name;
     myDiagramType = myItem->myDiagramType;
+    m_toggle = myItem->toggle();
     m_point = myItem->m_point;
     m_rect = myItem->m_rect;
+    m_image = type2Image(myItem->myDiagramType);
+
+    point_left = myItem->point_left;
+    point_right = myItem->point_right;
 
 
     setFlag(QGraphicsItem::ItemIsFocusable  ); // 如果要用键盘控制图形项，就必须使图形项可以获得焦点，即设置该标志
@@ -50,17 +66,21 @@ QRectF MyItem::boundingRect() const
 //        return QRectF(-40 - adjust ,-40- adjust,40+adjust,40+adjust);
 //    }
 
-    return QRectF(-40 - adjust ,-40- adjust,40+adjust,40+adjust);
+    return QRectF(-120 - adjust ,-120- adjust,120+adjust,120+adjust);
 }
 
 void MyItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     if (isSelected() || !collidingItems().isEmpty())      // 焦点-> 选中
-        painter->setPen(QPen(QColor(255,255,255,200)) );
-    else
         painter->setPen(QPen(QColor(100,100,100,100)));
-    painter->setBrush(brushColor);
-    painter->drawRect(-40,-40,40,40);
+    else
+        painter->setPen(QPen(QColor(255,255,255,200)) );
+
+//    painter->setBrush(brushColor);
+
+    QPixmap pixmap = type2Image(myDiagramType);
+    painter->drawPixmap(m_rect,pixmap);
+    painter->drawRect(m_rect);
 
 
 //    painter->setBrush(Qt::red);
@@ -85,7 +105,7 @@ void MyItem::setPoint(QPointF myPoint)
 QPainterPath MyItem::shape() const
 {
     QPainterPath path;
-    path.addRect(-40,-40,40,40);
+    path.addRect(-120,-120,120,120);
     return path;
 }
 
@@ -96,13 +116,7 @@ QColor MyItem::color() const
 
 QPixmap MyItem::image() const
 {
-    QPixmap pixmap(":/images/default.png");
-    if (diagramType() == MyTest1)
-        return QPixmap(":/images/test1.png");
-    if (diagramType() == MyTest2)
-        return QPixmap(":/images/test2.png");
-
-    return pixmap;
+    return m_image;
 }
 
 QString MyItem::name() const
@@ -115,6 +129,21 @@ QPointF MyItem::point() const
     return m_point+this->pos();
 }
 
+void MyItem::setLinePoint(QPointF p)
+{
+//    if( myDiagramType==GND ){
+//        isLeft_Right = true;
+//        return;
+//    }
+
+
+    p = mapFromScene(p);
+
+    auto len_left = (p.x()-point_left.x())*(p.x()-point_left.x())+(p.y()-point_left.y())*(p.y()-point_left.y());
+    auto len_right = (p.x()-point_right.x())*(p.x()-point_right.x())+(p.y()-point_right.y())*(p.y()-point_right.y());
+    isLeft_Right = len_left < len_right;
+}
+
 bool MyItem::selectedStatus()
 {
     return isSelected();
@@ -123,6 +152,14 @@ bool MyItem::selectedStatus()
 void MyItem::addArrow(Arrow *arrow)
 {
     m_linkedArrow.append(arrow);
+}
+
+QPixmap MyItem::type2Image(MyItem::MyType myType)
+{
+    if (myType == MyTest1)
+        return QPixmap(":/images/circuit/capacitor.png");
+    if (myType == MyTest2)
+        return QPixmap(":/images/circuit/inductor.png");
 }
 
 void MyItem::setLength(int length)
@@ -240,8 +277,8 @@ void MyItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     MyItemWidget* myItemWidget = control.getMyItemWidget();
     myItemWidget->setItemName(this->name());
     myItemWidget->setItemType(this->diagramType());
-    myItemWidget->setItemToggle("default toggle");
-    myItemWidget->setItemPixMap(this->image());
+    myItemWidget->setItemToggle(this->toggle());
+    myItemWidget->setItemPixMap(this->type2Image(this->diagramType()));
     myItemWidget->setTitleName(this->name());
 
     QObject::connect(myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
@@ -258,8 +295,20 @@ void MyItem::acceptSetName(QString myName)
 void MyItem::acceptSetToggle(const QString &toggle)
 {
     setToggle(toggle);
+    MyTextItem* myTextItem = new MyTextItem();
+
+    // 找到所有的Item项
+
+    myTextItem->setPlainText(toggle);
+    myTextItem->setParentItem(this);
+    myTextItem->setPos(QPointF(-60,-80));
+    myTextItem->setZValue(this->zValue()+1);
+
+    MyItemWidget* myItemWidget = control.getMyItemWidget();
+    QObject::disconnect(myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
+    myItemWidget = nullptr;
     // 在Item下方绘制一个graphicTextView
-    emit insertTextItem(toggle);
+//    emit insertTextItem(toggle);
 }
 
 

@@ -138,5 +138,7 @@ private slots:
     void itemSelected(QGraphicsItem *item);
     void myItemSelected();          // 仅表示有Item被选中
 
+    
+    
 };
 #endif // MAINWINDOW_H
