@@ -1,5 +1,8 @@
 #include "myitemwidget.h"
 #include "ui_myitemwidget.h"
+#include "mainwindow.h"
+
+
 
 MyItemWidget::MyItemWidget(QWidget *parent) :
     QWidget(parent),
@@ -35,7 +38,6 @@ void MyItemWidget::setItemType(int myType)
 
 void MyItemWidget::setItemPixMap(QPixmap myPixmap)
 {
-    myPixmap = myPixmap.scaled(ui->lbl_itemPicture->width(),ui->lbl_itemPicture->height(),Qt::KeepAspectRatio);
     ui->lbl_itemPicture->setPixmap(myPixmap);
 }
 
@@ -69,11 +71,9 @@ void MyItemWidget::on_btn_ok_clicked()
 {
     //  相关参数传给MainWindow类 / 未来的Control类
     QString newToggle = ui->txt_ItemToggle->text();
-    if (newToggle == "defaultToggle") return;
     emit setToggle(newToggle);
 
     QString newName = ui->txt_ItemName->text();
-//    if (newName == "defaultName") return;
     emit setName(newName);
 
     //  关闭窗口
@@ -89,4 +89,3 @@ void MyItemWidget::closeWindow()
 {
     this->close();
 }
-

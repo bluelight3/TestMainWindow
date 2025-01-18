@@ -17,7 +17,6 @@ protected:
     void focusOutEvent(QFocusEvent *event) override;
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override; // 这个是传递式的，不会阻止事件传递。
     void keyPressEvent(QKeyEvent *event) override;
 
 

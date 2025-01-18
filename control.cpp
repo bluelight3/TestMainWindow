@@ -1,16 +1,12 @@
 #include "control.h"
-#include "mainwindow.h"
 
 Control::Control()
 {
-    m_myItems = new QVector<MyItem *>;
     m_myMode = nullItem;
-}
 
-Control::~Control()
-{
-    if (m_myItems) delete m_myItems;
-    if (m_myItemWidget) delete m_myItemWidget;
+    m_bUpdateFlag = false;
+
+
 }
 
 Mode Control::getMyMode() const
@@ -37,7 +33,6 @@ void Control::setMyItemWidget(MyItemWidget *value)
 void Control::createMyItemWidget()
 {
     m_myItemWidget = new MyItemWidget();
-//    connect(myItemWidget,&MyItemWidget::setToggle,&w,&MainWindow::setItemToggle);
 }
 
 void Control::destroyMyItemWidget()
@@ -45,63 +40,25 @@ void Control::destroyMyItemWidget()
     delete m_myItemWidget;
 }
 
-void Control::createMyGenerateProjectForm()
+void Control::showMyItemWidget()
 {
-    m_myGenerateProjectForm = new GenerateProjectForm();
+    m_myItemWidget->show();
 }
 
-void Control::destroyMyGenerateProjectForm()
+void Control::showProperty(MyItem *myItem)
 {
-    delete m_myGenerateProjectForm;
+    if(!m_myItemWidget)
+        createMyItemWidget();
+    MyItemWidget* m_myItemWidget = getMyItemWidget();
+
+    m_myItemWidget->setItemName(myItem->name());
+    m_myItemWidget->setItemType(myItem->diagramType());
+    m_myItemWidget->setItemToggle(myItem->toggle());
+    m_myItemWidget->setItemPixMap(myItem->image());
+    m_myItemWidget->setTitleName(myItem->name());
+
+    QObject::connect(m_myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
+    QObject::connect(m_myItemWidget,SIGNAL(setName(QString)),this,SLOT(acceptSetName(QString)));
+
+    showMyItemWidget();
 }
-
-void Control::closeMyGenerateProjectForm()
-{
-    m_myGenerateProjectForm->close();
-}
-
-GenerateProjectForm *Control::getMyGenerateProjectForm() const
-{
-    return m_myGenerateProjectForm;
-}
-
-void Control::setMyGenerateProjectForm(GenerateProjectForm *value)
-{
-    m_myGenerateProjectForm = value;
-}
-
-void Control::createMyGenerateProjectThread()
-{
-    m_myGenerateProjectThread = new GenerateProjectThread();
-
-    connect(m_myGenerateProjectThread,SIGNAL(generateProject(int)),
-            m_myGenerateProjectForm,SLOT(updateProgress(int)));
-    connect(m_myGenerateProjectThread,SIGNAL(generated()),
-            this,SLOT(closeMyGenerateProjectForm()));
-}
-
-void Control::destroyMyGenerateProjectThread()
-{
-    delete m_myGenerateProjectThread;
-}
-
-GenerateProjectThread *Control::getMyGenerateProjectThread() const
-{
-    return m_myGenerateProjectThread;
-}
-
-void Control::setMyGenerateProjectThread(GenerateProjectThread *value)
-{
-    m_myGenerateProjectThread = value;
-}
-
-void Control::runMyGenerateProjectThread()
-{
-    m_myGenerateProjectThread->start();
-}
-
-QVector<MyItem *> *Control::getMyItems() const
-{
-    return m_myItems;
-}
-

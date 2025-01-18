@@ -18,11 +18,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     MyHelper.cpp \
     arrow.cpp \
+    command.cpp \
     control.cpp \
     diagramitem.cpp \
     diagramtextitem.cpp \
-    generateprojectform.cpp \
-    generateprojectthread.cpp \
+    loadwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     myitem.cpp \
@@ -34,12 +34,12 @@ SOURCES += \
 HEADERS += \
     MyHelper.h \
     arrow.h \
+    command.h \
     control.h \
     diagramitem.h \
     diagramtextitem.h \
-    generateprojectform.h \
-    generateprojectthread.h \
     global.h \
+    loadwidget.h \
     mainwindow.h \
     myitem.h \
     myitemwidget.h \
@@ -48,7 +48,7 @@ HEADERS += \
     myview.h
 
 FORMS += \
-    generateprojectform.ui \
+    loadwidget.ui \
     mainwindow.ui \
     myitemwidget.ui
 
@@ -58,9 +58,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    circuit.qrc \
+    background.qrc \
     diagramscene.qrc \
-    myimages.qrc
+    myimages.qrc \
+    qss.qrc
 
 DISTFILES += \
     labelQss.qss \

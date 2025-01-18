@@ -12,12 +12,11 @@
 #include <QButtonGroup>
 #include <QToolButton>
 #include <QLabel>
-#include <QHoverEvent>
 #include "diagramitem.h"
-#include "diagramtextitem.h"
 #include "mytextitem.h"
+#include "diagramtextitem.h"
+#include <QHoverEvent>
 #include "control.h"
-#include "generateprojectform.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -59,6 +58,19 @@ public:
     QLabel *m_labelText;
     QLabel *m_labelText2;
 
+    //载入界面
+
+
+    // 文件项目相关 (打开，保存)
+    QString m_projectName;
+    QString m_projectSaveName;
+
+    // 状态栏相关
+    QLabel* m_tmpLabel;
+
+    // 撤回恢复相关
+    QUndoStack* m_undoStack;
+
 
     void createToolBox();
     void buttonGroupClicked(int id);
@@ -67,9 +79,10 @@ public:
     QWidget* createCellWidget_v2(const QString &text, MyItem::MyType type);   // 通过自定义item类来设计widget
     QWidget* createBackgroundCellWidget(const QString &text, const QString &image);
 
+
     void backgroundButtonGroupClicked(QAbstractButton *button);
     void unselectAllshowedItem();
-    void generateProject();
+
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -81,7 +94,7 @@ protected:
 
 public:
     bool eventFilter(QObject* obj,QEvent * event);
-    static QByteArray generateProjectBit;       // 假设也会生成一段比特流
+    bool event(QEvent *e);
 
 private:
     Ui::MainWindow *ui;
@@ -90,8 +103,9 @@ private:
     // 自定义图元
     MyItem * myItem1;
     MyItem * myItem2;
-    DiagramTextItem *myDiagramTextItem;
+    DiagramTextItem* myDiagramTextItem;
     MyTextItem* myTextItem;
+
 
     int m_myItem1_count;
     int m_myItem2_count;
@@ -99,8 +113,7 @@ private:
     QGraphicsScene* m_scene;
     QMap<QLabel*,QGraphicsItem*> qmap_myItem;
     QVector<QGraphicsItem*>* qvec_MyItemOnView;  // 在界面上显示的Item
-    int m_updateProgressValue = 0;
-
+    QTimer* m_timer;        // 界面刷新定时器
 
 signals:
     void setMyDragMode(Mode m_myMode);
@@ -108,6 +121,11 @@ signals:
 
 public:
     void removeItems(QList<QGraphicsItem>* myItems);
+    void openProject();
+    void saveProject();
+    void saveAsProject();
+
+    void loadStyle(const QString &qssFile);
 
 public slots:
     void acceptInsertItem();
@@ -118,25 +136,52 @@ public slots:
     void acceptRemoveItem(QGraphicsItem* myItem);
     void acceptSelectItem(QGraphicsItem* myItem);
     void showStatus();  //显示当前状态 (仅调试用)
-    void editorLostFocus(DiagramTextItem *item);
+//    void editorLostFocus(DiagramTextItem *item);
     void acceptAddArrow(Arrow* myItem);
-    void setItemToggle(QString toggle);
+    void acceptMoveItem(MyItem* myItem,QPointF oldPos);
+    void acceptSetToggle(QString myToggle);
+    void updateWindow();                // 更新界面
 
 private slots:
     void testNew();
     void testOpen();
     void testSave();
+    void testSaveAs();
     void testCut();
     void testCopy();
     void testPaste();
+    void testExit();
+
     void testDelete();
     void testConnectLine();
     void testBrush();
-    void testGenerateProject();
-    void testSelectAll();
+
+    void testLeftRotate();
+    void testRightRotate();
+
+    void testToFront();
+    void testToBack();
+    void testToGroup();
+    void testGroupBreak();
+
+    void testBold();
+    void testItalic();
+    void testUnderLine();
+
+    void testUndo();
+    void testRedo();
+
+
+    void testShowStatus();
+    void sceneScaleChanged(const QString &scale);
+
+    void do_timer_timeout();
+
 
     void itemSelected(QGraphicsItem *item);
     void myItemSelected();          // 仅表示有Item被选中
+
+    void acceptDataChanged();
 
 };
 #endif // MAINWINDOW_H

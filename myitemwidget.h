@@ -21,7 +21,6 @@ public:
     void setItemPixMap(QPixmap myPixmap);
     void setTitleName(QString myTitleName);
 
-
 protected:
     // 拖拽实现窗口移动
     void mousePressEvent(QMouseEvent *event) override;
@@ -39,9 +38,9 @@ private slots:
 
 private:
     Ui::MyItemWidget *ui;
+
     QPoint windowPositionBeforeMoving;
     QPoint mousePressedPosition;
-//    MyItem* m_myItem;           // 正在操作的Item
 
 signals:
     void setToggle(QString toggle); // 将设置好的注释返回设置到Item上
