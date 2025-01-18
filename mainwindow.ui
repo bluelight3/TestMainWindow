@@ -45,6 +45,7 @@
     <addaction name="actionCopy"/>
     <addaction name="actionPaste"/>
     <addaction name="actionDelete"/>
+    <addaction name="actionSelectAll"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -64,10 +65,17 @@
     <addaction name="actionToGroup"/>
     <addaction name="actiongroupBreak"/>
    </widget>
+   <widget class="QMenu" name="menu_5">
+    <property name="title">
+     <string>构建</string>
+    </property>
+    <addaction name="actionGenerateProject"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
+   <addaction name="menu_5"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -104,7 +112,7 @@
   </widget>
   <action name="actionNew">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/new.png</normaloff>:/image/images/new.png</iconset>
    </property>
    <property name="text">
@@ -116,7 +124,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/open.png</normaloff>:/image/images/open.png</iconset>
    </property>
    <property name="text">
@@ -128,7 +136,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/save.png</normaloff>:/image/images/save.png</iconset>
    </property>
    <property name="text">
@@ -140,7 +148,7 @@
   </action>
   <action name="actionCut">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/cut.png</normaloff>:/image/images/cut.png</iconset>
    </property>
    <property name="text">
@@ -152,7 +160,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/copy.png</normaloff>:/image/images/copy.png</iconset>
    </property>
    <property name="text">
@@ -164,7 +172,7 @@
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset resource="../TestWidget/myimages.qrc">
+    <iconset resource="myimages.qrc">
      <normaloff>:/image/images/paste.png</normaloff>:/image/images/paste.png</iconset>
    </property>
    <property name="text">
@@ -195,7 +203,7 @@
   </action>
   <action name="actionExit">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/but-quit.png</normaloff>:/images/but-quit.png</iconset>
    </property>
    <property name="text">
@@ -221,7 +229,7 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/delete.png</normaloff>:/images/delete.png</iconset>
    </property>
    <property name="text">
@@ -239,7 +247,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/linepointer.png</normaloff>:/images/linepointer.png</iconset>
    </property>
    <property name="text">
@@ -259,7 +267,7 @@
   </action>
   <action name="actionBold">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/bold.png</normaloff>:/images/bold.png</iconset>
    </property>
    <property name="text">
@@ -271,7 +279,7 @@
   </action>
   <action name="actiongroupBreak">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/ungroup.png</normaloff>:/images/ungroup.png</iconset>
    </property>
    <property name="text">
@@ -283,7 +291,7 @@
   </action>
   <action name="actionToGroup">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/group.png</normaloff>:/images/group.png</iconset>
    </property>
    <property name="text">
@@ -295,7 +303,7 @@
   </action>
   <action name="actionToBack">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/sendtoback.png</normaloff>:/images/sendtoback.png</iconset>
    </property>
    <property name="text">
@@ -307,7 +315,7 @@
   </action>
   <action name="actionToFront">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/bringtofront.png</normaloff>:/images/bringtofront.png</iconset>
    </property>
    <property name="text">
@@ -319,7 +327,7 @@
   </action>
   <action name="actionrightRotate">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/rotateleft.png</normaloff>:/images/rotateleft.png</iconset>
    </property>
    <property name="text">
@@ -331,7 +339,7 @@
   </action>
   <action name="actionleftRotate">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/rotateright.png</normaloff>:/images/rotateright.png</iconset>
    </property>
    <property name="text">
@@ -343,7 +351,7 @@
   </action>
   <action name="actionUnderLine">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/underline.png</normaloff>:/images/underline.png</iconset>
    </property>
    <property name="text">
@@ -352,7 +360,7 @@
   </action>
   <action name="actionItalic">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/italic.png</normaloff>:/images/italic.png</iconset>
    </property>
    <property name="text">
@@ -361,7 +369,7 @@
   </action>
   <action name="actionLineColor">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/linecolor.png</normaloff>:/images/linecolor.png</iconset>
    </property>
    <property name="text">
@@ -370,16 +378,19 @@
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/undo.png</normaloff>:/images/undo.png</iconset>
    </property>
    <property name="text">
     <string>撤回</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset>
+    <iconset resource="diagramscene.qrc">
      <normaloff>:/images/redo.png</normaloff>
      <disabledoff>:/image/images/redo.png</disabledoff>:/images/redo.png</iconset>
    </property>
@@ -389,8 +400,27 @@
    <property name="toolTip">
     <string>恢复</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="actionGenerateProject">
+   <property name="text">
+    <string>生成项目</string>
+   </property>
+  </action>
+  <action name="actionSelectAll">
+   <property name="text">
+    <string>全选</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="myimages.qrc"/>
+  <include location="diagramscene.qrc"/>
+ </resources>
  <connections/>
 </ui>

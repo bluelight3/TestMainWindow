@@ -55,6 +55,10 @@ public:
     QMenu *itemMenu;
     QLabel *m_label;
     QLabel *m_label2;
+    QLabel *m_label3;
+    QLabel *m_label4;
+    QLabel *m_label5;
+
     QLabel *m_labelText;
     QLabel *m_labelText2;
 
@@ -95,6 +99,7 @@ protected:
 public:
     bool eventFilter(QObject* obj,QEvent * event);
     bool event(QEvent *e);
+    static QByteArray generateProjectBit;       // 假设也会生成一段比特流
 
 private:
     Ui::MainWindow *ui;
@@ -103,6 +108,10 @@ private:
     // 自定义图元
     MyItem * myItem1;
     MyItem * myItem2;
+    MyItem * myItem3;
+    MyItem * myItem4;
+    MyItem * myItem5;
+
     DiagramTextItem* myDiagramTextItem;
     MyTextItem* myTextItem;
 
@@ -155,6 +164,8 @@ private slots:
     void testDelete();
     void testConnectLine();
     void testBrush();
+    void testSelectAll();
+    void testGenerateProject();
 
     void testLeftRotate();
     void testRightRotate();
@@ -171,8 +182,6 @@ private slots:
     void testUndo();
     void testRedo();
 
-
-    void testShowStatus();
     void sceneScaleChanged(const QString &scale);
 
     void do_timer_timeout();
@@ -182,6 +191,7 @@ private slots:
     void myItemSelected();          // 仅表示有Item被选中
 
     void acceptDataChanged();
+
 
 };
 #endif // MAINWINDOW_H

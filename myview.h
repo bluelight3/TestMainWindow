@@ -3,6 +3,7 @@
 #include <QGraphicsView>
 #include <QContextMenuEvent>
 #include "myitem.h"
+#include "mytextitem.h"
 #include "global.h"
 
 class MyView : public QGraphicsView
@@ -48,6 +49,7 @@ private:
 
 //    Mode m_myMode;
     QGraphicsLineItem* m_line;
+    QGraphicsLineItem* m_line2;
 
 private slots:
     void acceptSetMyDragMode();

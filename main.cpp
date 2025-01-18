@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     m_loadWidget->setAttribute(Qt::WA_ShowModal, true);    //属性设置 true:模态 false:非模态
     m_loadWidget->show();
 #else
-    w.showMaximized();
+    w.show();
 #endif
 
 

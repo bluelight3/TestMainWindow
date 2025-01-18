@@ -11,7 +11,7 @@
 * @author        gl
 * @date          2024-12-29
 **********************************************/
-Movecommand::Movecommand(MyItem *myItem, const QPointF &oldPos, QUndoCommand *parent)
+MoveCommand::MoveCommand(MyItem *myItem, const QPointF &oldPos, QUndoCommand *parent)
 {
     m_myItem = myItem;
     m_newPos = myItem->pos();
@@ -27,7 +27,7 @@ Movecommand::Movecommand(MyItem *myItem, const QPointF &oldPos, QUndoCommand *pa
 * @author        gl
 * @date          2024-12-29
 **********************************************/
-void Movecommand::undo()
+void MoveCommand::undo()
 {
     m_myItem->setPos(m_myOldPos);
     m_myItem->scene()->update();
@@ -42,10 +42,33 @@ void Movecommand::undo()
 * @author        gl
 * @date          2024-12-29
 **********************************************/
-void Movecommand::redo()
+void MoveCommand::redo()
 {
     m_myItem->setPos(m_newPos);
     m_myItem->scene()->update();
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         合并2次以上的移动命令
+* @func          MoveCommand::mergeWith
+* @param         void
+* @return        void
+* @author        gl
+* @date          2024-12-29
+**********************************************/
+bool MoveCommand::mergeWith(const QUndoCommand *command)
+{
+    const MoveCommand *moveCommand = static_cast<const MoveCommand *>(command);
+    MyItem *item = moveCommand->m_myItem;
+
+    if (m_myItem != item)
+    return false;
+
+//    newPos = item->pos();
+//    setText(QObject::tr("Move %1").arg(createCommandString(myDiagramItem, newPos)));
+
+    return false;
 }
 
 
@@ -68,6 +91,8 @@ AddCommand::AddCommand(MyItem *myItem, QGraphicsScene *scene, QUndoCommand *pare
 }
 
 
+
+
 /**********************************************
 * @projectName   TestMainWindow
 * @brief         撤回添加命令
@@ -79,7 +104,8 @@ AddCommand::AddCommand(MyItem *myItem, QGraphicsScene *scene, QUndoCommand *pare
 **********************************************/
 void AddCommand::undo()
 {
-
+    m_myGraphicsScene->removeItem(m_myDiagramItem);
+    m_myGraphicsScene->update();
 }
 
 /**********************************************
@@ -93,22 +119,11 @@ void AddCommand::undo()
 **********************************************/
 void AddCommand::redo()
 {
-
+    m_myGraphicsScene->addItem(m_myDiagramItem);
+    m_myGraphicsScene->clearSelection();
+    m_myGraphicsScene->update();
 }
 
-/**********************************************
-* @projectName   TestMainWindow
-* @brief         合并2次以上的移动命令
-* @func          MoveCommand::mergeWith
-* @param         void
-* @return        void
-* @author        gl
-* @date          2024-12-29
-**********************************************/
-bool Movecommand::mergeWith(const QUndoCommand *other)
-{
-
-}
 
 DeleteCommand::DeleteCommand(QGraphicsScene *graphicsScene, QUndoCommand *parent)
 {

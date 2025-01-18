@@ -7,13 +7,13 @@
 #include "myitem.h"
 #include "arrow.h"
 class Arrow;
-class Movecommand : public QObject,public QUndoCommand
+class MoveCommand : public QObject,public QUndoCommand
 {
     Q_OBJECT
 public:
 
     enum {Id = 1234};
-    Movecommand(MyItem * myItem,const QPointF &oldPos,QUndoCommand *parent=0);
+    MoveCommand(MyItem * myItem,const QPointF &oldPos,QUndoCommand *parent=0);
 
 
     void undo() override;

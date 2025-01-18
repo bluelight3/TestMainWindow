@@ -22,6 +22,8 @@ SOURCES += \
     control.cpp \
     diagramitem.cpp \
     diagramtextitem.cpp \
+    generateprojectform.cpp \
+    generateprojectthread.cpp \
     loadwidget.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -38,6 +40,8 @@ HEADERS += \
     control.h \
     diagramitem.h \
     diagramtextitem.h \
+    generateprojectform.h \
+    generateprojectthread.h \
     global.h \
     loadwidget.h \
     mainwindow.h \
@@ -48,6 +52,7 @@ HEADERS += \
     myview.h
 
 FORMS += \
+    generateprojectform.ui \
     loadwidget.ui \
     mainwindow.ui \
     myitemwidget.ui
@@ -59,6 +64,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 RESOURCES += \
     background.qrc \
+    circuit.qrc \
     diagramscene.qrc \
     myimages.qrc \
     qss.qrc

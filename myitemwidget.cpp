@@ -71,9 +71,11 @@ void MyItemWidget::on_btn_ok_clicked()
 {
     //  相关参数传给MainWindow类 / 未来的Control类
     QString newToggle = ui->txt_ItemToggle->text();
+    if (newToggle == "defaultToggle") return;
     emit setToggle(newToggle);
 
     QString newName = ui->txt_ItemName->text();
+//    if (newName == "defaultName") return;
     emit setName(newName);
 
     //  关闭窗口

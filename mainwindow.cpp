@@ -19,22 +19,25 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 初始化
     setAcceptDrops(true);
-    setMouseTracking(true);
-    setAttribute(Qt::WA_Hover,true);
-    this->setMaximumSize(1080,720);
-
-
+    control.createMyItemWidget();
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
     m_selectedItem = NULL;
+
+    setMouseTracking(true);
+    setAttribute(Qt::WA_Hover,true);
+//    this->setMaximumSize(1920,1080);
+
+
     m_undoStack = new QUndoStack(this);
-    m_undoStack->setUndoLimit( 5 );
+    m_undoStack->setUndoLimit( 10 );
 
     //
 
     //设置一个单独接收拖动标签
     m_label = new QLabel(this);
-    QPixmap pix(":/images/new.png");
+    QPixmap pix(":/images/circuit/capacitor.png");
+    pix = pix.scaled(60,60,Qt::KeepAspectRatio);
     m_label->setPixmap(pix);
     m_label->resize(pix.size());
     m_label->move(100,100);
@@ -42,16 +45,46 @@ MainWindow::MainWindow(QWidget *parent)
     m_label->installEventFilter(this);
 
     m_label2 = new QLabel(this);
-    QPixmap pix2(":/images/copy.png");
+    QPixmap pix2(":/images/circuit/inductor.png");
+    pix2 = pix2.scaled(60,60,Qt::KeepAspectRatio);
     m_label2->setPixmap(pix2);
     m_label2->resize(pix2.size());
     m_label2->move(100,100);
     m_label2->setAttribute(Qt::WA_DeleteOnClose);
     m_label2->installEventFilter(this);
 
+    m_label3 = new QLabel(this);
+    QPixmap pix3(":/images/circuit/resistor.png");
+    pix3 = pix3.scaled(60,60,Qt::KeepAspectRatio);
+    m_label3->setPixmap(pix3);
+    m_label3->resize(pix3.size());
+    m_label3->move(100,100);
+    m_label3->setAttribute(Qt::WA_DeleteOnClose);
+    m_label3->installEventFilter(this);
+
+    m_label4 = new QLabel(this);
+    QPixmap pix4(":/images/circuit/power.png");
+    pix4 = pix4.scaled(60,60,Qt::KeepAspectRatio);
+    m_label4->setPixmap(pix4);
+    m_label4->resize(pix4.size());
+    m_label4->move(100,100);
+    m_label4->setAttribute(Qt::WA_DeleteOnClose);
+    m_label4->installEventFilter(this);
+
+    m_label5 = new QLabel(this);
+    QPixmap pix5(":/images/circuit/ground.png");
+    pix5 = pix5.scaled(60,60,Qt::KeepAspectRatio);
+    m_label5->setPixmap(pix5);
+    m_label5->resize(pix5.size());
+    m_label5->move(100,100);
+    m_label5->setAttribute(Qt::WA_DeleteOnClose);
+    m_label5->installEventFilter(this);
+
+
+
     m_labelText = new QLabel(this);
-    QPixmap pix3(":/images/textpointer.png");
-    m_labelText->setPixmap(pix3);
+    QPixmap pixText1(":/images/textpointer.png");
+    m_labelText->setPixmap(pixText1);
     m_labelText->resize(pix3.size());
 //    m_labelText->move(100,100);
     m_labelText->setAttribute(Qt::WA_DeleteOnClose);
@@ -59,23 +92,43 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     m_labelText2 = new QLabel(this);
-    QPixmap pix4(":/images/textpointer.png");
-    m_labelText2->setPixmap(pix3);
+    QPixmap pixText2(":/images/textpointer.png");
+    m_labelText2->setPixmap(pixText2);
     m_labelText2->resize(pix3.size());
 //    m_labelText->move(100,100);
     m_labelText2->setAttribute(Qt::WA_DeleteOnClose);
     m_labelText2->installEventFilter(this);
 
     myItem1 = new MyItem;
-    myItem1->setColor(Qt::blue);
+    myItem1->setColor(Qt::green);
     myItem1->setType(MyItem::MyTest1);
     myItem1->setName("test1_name");
     myItem1->setPoint(QPointF(0.0,0.0));
+
     myItem2 = new MyItem;
-    myItem2->setColor(Qt::green);
+    myItem2->setColor(Qt::blue);
     myItem2->setType(MyItem::MyTest2);
     myItem2->setName("test2_name");
     myItem2->setPoint(QPointF(0.0,0.0));
+
+    myItem3 = new MyItem;
+    myItem3->setColor(Qt::cyan);
+    myItem3->setType(MyItem::MyTest3);
+    myItem3->setName("test3_name");
+    myItem3->setPoint(QPointF(0.0,0.0));
+
+    myItem4 = new MyItem;
+    myItem4->setColor(Qt::magenta);
+    myItem4->setType(MyItem::MyTest2);
+    myItem4->setName("test4_name");
+    myItem4->setPoint(QPointF(0.0,0.0));
+
+    myItem5 = new MyItem;
+    myItem5->setColor(Qt::yellow);
+    myItem5->setType(MyItem::MyTest2);
+    myItem5->setName("test5_name");
+    myItem5->setPoint(QPointF(0.0,0.0));
+
 
     myDiagramTextItem = new DiagramTextItem;
 //    myDiagramTextItem->setFont(myFont);
@@ -100,6 +153,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_myItem1_count = 1;
     m_myItem2_count = 1;
+    //
+    sceneScaleCombo = new QComboBox;
+    QStringList scales;
+    scales << tr("50%") << tr("75%") << tr("100%") << tr("125%") << tr("150%");
+    sceneScaleCombo->addItems(scales);
+    sceneScaleCombo->setCurrentIndex(2);
+    connect(sceneScaleCombo, SIGNAL(currentIndexChanged(QString)),this, SLOT(sceneScaleChanged(QString)));
+    ui->toolBar->addWidget(sceneScaleCombo);
+
     //
     createToolBox();
 
@@ -133,8 +195,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionSaveAs,SIGNAL(triggered()),this,SLOT(testSaveAs()));
 
 
-    connect(ui->actionUndo,SIGNAL(triggered()), this->m_undoStack, SLOT(undo()));
-    connect(ui->actionRedo,SIGNAL(triggered()), this->m_undoStack, SLOT(redo()));
+    connect(ui->actionUndo,SIGNAL(triggered()), this,SLOT(testUndo()));
+    connect(ui->actionRedo,SIGNAL(triggered()), this,SLOT(testRedo()));
     connect(ui->actionCut,SIGNAL(triggered()),this,SLOT(testCut()));
     connect(ui->actionCopy,SIGNAL(triggered()),this,SLOT(testCopy()));
     connect(ui->actionPaste,SIGNAL(triggered()),this,SLOT(testPaste()));
@@ -151,6 +213,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionUnderLine,SIGNAL(triggered()),this,SLOT(testUnderLine()));
 
     connect(ui->actionStatus,SIGNAL(triggered()),this, SLOT(showStatus()));
+    connect(ui->actionGenerateProject,SIGNAL(triggered()),this,SLOT(testGenerateProject()));
+
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
     connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
@@ -230,9 +294,12 @@ void MainWindow::createToolBox()
     QGridLayout *layout = new QGridLayout;
     layout->addWidget(m_label,0,0);
     layout->addWidget(m_label2,0,1);
-    layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 1, 0);
-    layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),1, 1);
-    layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 2, 0);
+    layout->addWidget(m_label3,1,0);
+    layout->addWidget(m_label4,1,1);
+    layout->addWidget(m_label5,2,0);
+//    layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 1, 0);
+//    layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),1, 1);
+//    layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 2, 0);
     // added
     //    layout->addWidget(createCellWidget(tr("myitem1"),DiagramItem::MyTest1),3,0);
     //    layout->addWidget(createCellWidget(tr("myitem2"),DiagramItem::MyTest2),3,1);
@@ -244,17 +311,17 @@ void MainWindow::createToolBox()
 
     //! [21]
 
-    QToolButton *textButton = new QToolButton;
-    textButton->setCheckable(true);
-    buttonGroup->addButton(textButton, InsertTextButton);
-    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
-    textButton->setIconSize(QSize(50, 50));
-    QGridLayout *textLayout = new QGridLayout;
-    textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
-    textLayout->addWidget(new QLabel(tr("Text")), 1, 0, Qt::AlignCenter);
-    QWidget *textWidget = new QWidget;
-    textWidget->setLayout(textLayout);
-    layout->addWidget(textWidget, 2, 1);
+//    QToolButton *textButton = new QToolButton;
+//    textButton->setCheckable(true);
+//    buttonGroup->addButton(textButton, InsertTextButton);
+//    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
+//    textButton->setIconSize(QSize(50, 50));
+//    QGridLayout *textLayout = new QGridLayout;
+//    textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
+//    textLayout->addWidget(new QLabel(tr("Text")), 1, 0, Qt::AlignCenter);
+//    QWidget *textWidget = new QWidget;
+//    textWidget->setLayout(textLayout);
+//    layout->addWidget(textWidget, 2, 1);
 
     layout->addWidget(m_labelText,3,0);
     layout->addWidget(m_labelText2,3,1);
@@ -290,7 +357,7 @@ void MainWindow::createToolBox()
     toolBox = new QToolBox;
     toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
     toolBox->setMinimumWidth(itemWidget->sizeHint().width());
-    toolBox->addItem(itemWidget, tr("Basic Flowchart Shapes"));
+    toolBox->addItem(itemWidget, tr("Basic circuit items"));
     toolBox->addItem(backgroundWidget, tr("Backgrounds"));
 
 
@@ -391,7 +458,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
         // 将所有Item设置成未被选中状态
         unselectAllshowedItem();
 
-        MyItem * selectedItem = static_cast<MyItem*>(m_view->itemAt(event->pos()));
+        MyItem * selectedItem = static_cast<MyItem*>(m_view->itemAt(m_view->mapFromGlobal(QCursor::pos())));
         if (selectedItem){
             m_selectedItem = selectedItem;
             setFocus();
@@ -625,9 +692,12 @@ void MainWindow::acceptInsertItem()
         }
 
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
+        control.getMyItems()->push_back(tmpInsertedItem);
         m_scene->addItem(tmpInsertedItem);
 //        qvec_MyItemOnView->push_back(tmpInsertedItem);
         //
+        QUndoCommand *addCommand = new AddCommand(tmpInsertedItem, m_scene);
+        m_undoStack->push(addCommand);
     }
     else if (myTmpDiagramTextItem){
         // 设置自己的Item名称
@@ -768,6 +838,7 @@ void MainWindow::acceptClipBoardInsertItem(QGraphicsItem* myItem)
 
         MyItem* tmpInsertedItem = new MyItem(tmpItem);
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
+        control.getMyItems()->push_back(tmpInsertedItem);
         m_scene->addItem(tmpInsertedItem);
         qvec_MyItemOnView->push_back(tmpInsertedItem);
     }
@@ -850,6 +921,8 @@ void MainWindow::showStatus()
     for (auto& qvec_myItemOnView : m_scene->items()) {
         qDebug() << qvec_myItemOnView->isSelected() << qvec_myItemOnView->pos();
     }
+    qDebug() << m_undoStack->count();
+
 }
 
 //void MainWindow::editorLostFocus(DiagramTextItem *item)
@@ -883,7 +956,8 @@ void MainWindow::acceptAddArrow(Arrow *myItem)
 
 void MainWindow::acceptMoveItem(MyItem *myItem, QPointF oldPos)
 {
-    m_undoStack->push(new Movecommand(myItem, oldPos));
+    qDebug() << " new Movecommand is set, oldPos:" << oldPos;
+    m_undoStack->push(new MoveCommand(myItem, oldPos));
 }
 
 void MainWindow::acceptSetToggle(QString myToggle)
@@ -1037,6 +1111,31 @@ void MainWindow::testBrush()
     m_scene->update();
     m_view->repaint();
 //    connect(control.getMyItemWidget(),SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
+}
+
+void MainWindow::testSelectAll()
+{
+    for (auto item : m_scene->items())
+        item->setSelected(true);
+}
+
+void MainWindow::testGenerateProject()
+{
+    // 更新界面进度条
+    if (!control.getMyGenerateProjectForm())
+        control.createMyGenerateProjectForm();
+    if (!control.getMyGenerateProjectThread())
+        control.createMyGenerateProjectThread();
+    GenerateProjectForm* form = control.getMyGenerateProjectForm();
+    GenerateProjectThread* thread = control.getMyGenerateProjectThread();
+    control.runMyGenerateProjectThread();
+    form->show();
+//    QTimer* timer = new QTimer(this);
+//    connect(timer,&QTimer::timeout,thread,GenerateProjectThread::);
+    // 生成Project具体实现
+//    m_updateProgressValue++;
+//    thread->setGenerateProgress(m_updateProgressValue);
+    // 生成项目在generateProject中实现
 }
 
 void MainWindow::itemSelected(QGraphicsItem *item)
@@ -1209,13 +1308,16 @@ void MainWindow::testBold()
     //    font.setUnderline(underlineAction->isChecked());
 
     //    scene->setFont(font);
+    if (m_scene->selectedItems().isEmpty()) return;
     MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         // 未来按钮改成Checked形式
         QFont font = selectedTextItem->font();
-        font.setWeight(QFont::Bold);
-
+        if (font.weight() != QFont::Bold)
+            font.setWeight(QFont::Bold);
+        else
+            font.setWeight(QFont::Normal);
         selectedTextItem->setFont(font);
         m_scene->update();
     }
@@ -1223,11 +1325,12 @@ void MainWindow::testBold()
 
 void MainWindow::testItalic()
 {
+    if (m_scene->selectedItems().isEmpty()) return;
     MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         QFont font = selectedTextItem->font();
-        font.setItalic(true);
+        font.setItalic(!font.italic());
         selectedTextItem->setFont(font);
         m_scene->update();
     }
@@ -1235,11 +1338,12 @@ void MainWindow::testItalic()
 
 void MainWindow::testUnderLine()
 {
+    if (m_scene->selectedItems().isEmpty()) return;
     MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         QFont font = selectedTextItem->font();
-        font.setUnderline(true);
+        font.setUnderline(!font.underline());
         selectedTextItem->setFont(font);
         m_scene->update();
     }
@@ -1247,20 +1351,18 @@ void MainWindow::testUnderLine()
 
 void MainWindow::testUndo()
 {
+//     ui->actionUndo = m_undoStack->createUndoAction(this,tr("撤销"));
+//     ui->actionRedo = m_undoStack->createRedoAction(this,tr("恢复"));
 
+    m_undoStack->undo();
+//    if (m_undoStack->count() > 5);
 }
 
 void MainWindow::testRedo()
 {
-
+    m_undoStack->redo();
 }
 
-void MainWindow::testShowStatus()
-{
-    for (auto& qvec_myItemOnView: m_scene->items() ){
-        qDebug() << qvec_myItemOnView->isSelected() << qvec_myItemOnView->pos();
-    }
-}
 
 
 /**

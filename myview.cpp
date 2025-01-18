@@ -17,6 +17,9 @@ MyView::MyView(QWidget * parent) :QGraphicsView(parent)
     m_bAcceptContextMenu = true;
     m_line = nullptr;
     m_paintFlag = false;
+    m_selectedItem = nullptr;
+
+
 }
 
 void MyView::keyPressEvent(QKeyEvent *event)
@@ -52,13 +55,23 @@ void MyView::mousePressEvent(QMouseEvent *event)
         else{
             emit selectItem(m_selectedItem);
         }
+        QPoint mousePos = event->pos();
+        m_selectedItem = dynamic_cast<MyItem*>(itemAt(mousePos));
+
+        if (m_selectedItem != 0 && event->button() == Qt::LeftButton) {
+            oldPos = m_selectedItem->pos();
+        }
     }
     else if (control.getMyMode() == InsertLine){
-        MyItem* firstSelectItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
+        m_selectedItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
         m_line = new QGraphicsLineItem(QLineF(event->pos(),
                                               event->pos()));
         m_line->setPen(QPen(Qt::black, 2));
-
+        m_line2 = new QGraphicsLineItem(QLineF(event->pos(),
+                                              event->pos()));
+        m_line2 ->setPen(QPen(Qt::black, 2));
+        scene()->addItem(m_line);
+        scene()->addItem(m_line2);
     }
 
 
@@ -69,13 +82,20 @@ void MyView::mouseMoveEvent(QMouseEvent *event)
 {
     m_lastPos = event->pos();
     if (control.getMyMode() == Mode::InsertLine && m_line != nullptr) {
-        QLineF newLine(m_line->line().p1(), event->pos());
+        QPointF tmpPoint = QPointF(event->pos().x(),m_line->line().p1().y());
+        QLineF newLine(m_line->line().p1(), tmpPoint);
+        QLineF newLine2(tmpPoint, event->pos());
         m_line->setLine(newLine);
+        m_line2->setLine(newLine2);
+
     } else if (control.getMyMode() == Mode::MoveItem) {
-        return QGraphicsView::mouseMoveEvent(event);
+        QGraphicsView::mouseMoveEvent(event);
+
     }
-    else
-        return QGraphicsView::mouseMoveEvent(event);
+    else{
+        QGraphicsView::mouseMoveEvent(event);
+    }
+    update();
 }
 
 void MyView::mouseReleaseEvent(QMouseEvent *event)
@@ -86,12 +106,14 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
         QList<QGraphicsItem *> startItems = items(m_line->line().p1().x(),m_line->line().p1().y());
         if (startItems.count() && startItems.first() == m_line)
             startItems.removeFirst();
-        QList<QGraphicsItem *> endItems = items(m_line->line().p2().x(),m_line->line().p2().y());
-        if (endItems.count() && endItems.first() == m_line)
+        QList<QGraphicsItem *> endItems = items(m_line2->line().p2().x(),m_line2->line().p2().y());
+        if (endItems.count() && endItems.first() == m_line2)
             endItems.removeFirst();
+        qDebug() << m_line << m_line2;
 
-        //        emit removeItem(m_line);
-        delete m_line;
+        emit removeItem(m_line);
+        emit removeItem(m_line2);
+        //        delete m_line;
         //! [11] //! [12]
 
         if (startItems.count() > 0 && endItems.count() > 0 &&
@@ -100,27 +122,44 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
                 startItems.first() != endItems.first()) {
             MyItem *startItem = qgraphicsitem_cast<MyItem  *>(startItems.first());
             MyItem *endItem = qgraphicsitem_cast<MyItem  *>(endItems.first());
+
+            auto p1 = m_line->mapToParent(m_line->line().p1() );
+            auto p2 = m_line->mapToParent(m_line->line().p2() );
+            startItem->setLinePoint( p1 );
+            endItem->setLinePoint( p2 );
+
+
             Arrow *arrow = new Arrow(startItem, endItem);
             arrow->setColor(Qt::black);
             startItem->addArrow(arrow);
             endItem->addArrow(arrow);
             arrow->setZValue(-1000.0);
-            emit addArrow(arrow);
             arrow->updatePosition();
+            emit addArrow(arrow);
+
         }
+        m_line = nullptr;
     }
     //! [12] //! [13]
-    QPoint mousePos = mapFromGlobal(event->pos());
+    if (control.getMyMode() != Mode::InsertLine)
+    {
+//        QPoint mousePos =   event->pos();
+//        m_selectedItem = dynamic_cast<MyItem*>(itemAt(mousePos));
 
-    m_selectedItem = dynamic_cast<MyItem*>(itemAt(mousePos));
+        if (m_selectedItem != 0 && event->button() == Qt::LeftButton) {
+            if (oldPos != m_selectedItem->pos() && m_selectedItem->type()==MyItem::Type )
+                emit moveItem(m_selectedItem,oldPos);
+        }
 
-    if (m_selectedItem != 0 && event->button() == Qt::LeftButton) {
-        if (oldPos != m_selectedItem->pos() && m_selectedItem->type()==MyItem::Type )
-            emit moveItem(m_selectedItem,oldPos);
     }
 
 
-    m_line = nullptr;
+    for (auto item : scene()->selectedItems() ) {
+        auto p = item->pos();
+        p.setX( int(p.x()/10)*10 );
+        p.setY( int(p.y()/10)*10 );
+        item->setPos(p);
+    }
 
     return QGraphicsView::mouseReleaseEvent(event);
 }
@@ -174,9 +213,9 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
 {
 
     MyItem * selectedItem = static_cast<MyItem*>(itemAt(event->pos()));
+    MyTextItem * selectedTextItem = static_cast<MyTextItem*>(itemAt(event->pos()));
 
-
-    if (!selectedItem){
+    if (!selectedItem && !selectedTextItem){
         QMenu menu;
         QAction *cutAction = menu.addAction("剪切");
         QAction *copyAction = menu.addAction("复制");
@@ -197,29 +236,37 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             //            qDebug()<<m_mousePos;
             //            emit insertClipBordItem(m_mousePos);
 
-            // 这里实现粘贴操作
             QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
             const QMimeData* mimeData = clipBoard->mimeData();
             // 判断是否存在我们要的数据
-            if (!mimeData->hasFormat("application/myItem")){
-                return;
+            if (mimeData->hasFormat("application/myItem")){
+                QByteArray itemData = mimeData->data("application/myItem");
+                QDataStream dataStream(&itemData,QIODevice::ReadOnly);
+                QString name;
+                MyItem::MyType myType;
+                QPointF myPoint;
+                QColor color;
+                QString toggle;
+
+                dataStream >> color >> name >> myType >> myPoint >> toggle;
+                MyItem tmpItem;
+                tmpItem.setColor(color);
+                tmpItem.setName(name);
+                tmpItem.setType(myType);
+                tmpItem.setPoint(myPoint);
+                tmpItem.setToggle(toggle);
+                emit insertClipBordItem(&tmpItem);
             }
-            // 取出数据
-            QByteArray itemData = mimeData->data("application/myItem");
+            else if (mimeData->hasFormat("application/myTextItem")){
+                QByteArray itemData = mimeData->data("application/myTextItem");
+                QDataStream dataStream(&itemData,QIODevice::ReadOnly);
 
-            QDataStream dataStream(&itemData,QIODevice::ReadOnly);
-            QString name;
-            MyItem::MyType myType;
-            QPointF myPoint;
-            QColor color;
-
-            dataStream >> color >> name >> myType >> myPoint;
-            MyItem tmpItem;
-            tmpItem.setColor(color);
-            tmpItem.setName(name);
-            tmpItem.setType(myType);
-            tmpItem.setPoint(myPoint);
-            emit insertClipBordItem(&tmpItem);
+                QString text;
+                dataStream >> text;
+                MyTextItem tmpTextItem;
+                tmpTextItem.setPlainText(text);
+                emit insertClipBordItem(&tmpTextItem);
+            }
 
         }
         else if (selectedAction == brushAction){
@@ -290,13 +337,15 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             MyItem::MyType myType;
             QPointF myPoint;
             QColor color;
+            QString toggle;
 
-            dataStream >> color >> name >> myType >> myPoint;
+            dataStream >> color >> name >> myType >> myPoint >> toggle;
             MyItem tmpItem;
             tmpItem.setColor(color);
             tmpItem.setName(name);
             tmpItem.setType(myType);
             tmpItem.setPoint(myPoint);
+            tmpItem.setToggle(toggle);
             emit insertClipBordItem(&tmpItem);
 
             //            delete tmpItem;
@@ -309,6 +358,103 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
         else if (selectedAction == propertyAction) {
             control.showProperty(selectedItem);
         }
+        else{
+            qDebug() << "not defined Action";
+        }
+    }
+
+
+
+    else if ( selectedTextItem){
+        QMenu menu;
+        QAction *moveAction = menu.addAction("移回");
+        QAction *cutAction = menu.addAction("剪切");
+        QAction *copyAction = menu.addAction("复制");
+        QAction *pasteAction = menu.addAction("粘贴");
+        QAction *deleteAction = menu.addAction("删除");
+        menu.addSeparator();
+        //        QAction *addToItemAction = menu.addAction("添加至图元");
+        QMenu subMenu;
+        subMenu.setTitle("添加至图元");
+        QList <QAction*> addToItemActions;
+
+        // 获取所有MyItem图元名称
+
+        for (int i = 0; i < control.getMyItems()->size();i++){
+            MyItem* tmpItem = control.getMyItems()->at(i);
+            QAction* tmpAddToItemAction = subMenu.addAction(tmpItem->name());
+            if (tmpItem->childItems().size()>0){
+                tmpAddToItemAction->setEnabled(false);
+            }
+            addToItemActions.append(tmpAddToItemAction);
+        }
+        menu.addMenu(&subMenu);
+
+
+        QAction *selectedAction = menu.exec(event->globalPos());
+        if (selectedAction == moveAction){
+            qDebug() <<"move back!";
+            selectedTextItem->setPos(0,0);
+        }
+        else if (selectedAction == cutAction){
+            // 这里实现剪切操作
+        }
+        else if (selectedAction == copyAction) {
+            // 这里实现复制操作 后续改成根据复制的Item是MyItem还是TextItem执行不同的操作
+            QByteArray itemData;
+
+            QDataStream dataStream(&itemData,QIODevice::WriteOnly); //创建数据流
+            // 将Item的相关参数放入到字节数组中
+            dataStream <<selectedTextItem->toPlainText();
+            // 多个复制需要将多个Item一起放到 dataStrem中 一个解决方案就是先指定有多少个Item，然后一个一个把Item放进去 ()
+            // 将数据放入QMimeData中
+            QMimeData* mimeData = new QMimeData;
+            // 第四步 将字节数组放入QMimeData中，此处Mime类型由自己定义
+            mimeData->setData("application/myTextItem",itemData);
+            QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
+            clipBoard->setMimeData(mimeData);
+
+        }
+        else if (selectedAction == pasteAction) {
+            // 这里实现粘贴操作
+            QClipboard* clipBoard = QApplication::clipboard(); // 自定义剪切板，只在view中实现做参考因此定义在这
+            const QMimeData* mimeData = clipBoard->mimeData();
+            // 判断是否存在我们要的数据
+            if (!mimeData->hasFormat("application/myTextItem")){
+                return;
+            }
+            // 取出数据
+            QByteArray itemData = mimeData->data("application/myTextItem");
+
+            QDataStream dataStream(&itemData,QIODevice::ReadOnly);
+            QString text;
+            dataStream >> text;
+            MyTextItem tmpTextItem;
+            tmpTextItem.setPlainText(text);
+            emit insertClipBordItem(&tmpTextItem);
+
+            //            delete tmpItem;
+        }
+        else if (selectedAction == deleteAction) {
+            emit removeItem(selectedTextItem);  // 删除选中Item
+            // 这里实现删除操作
+        }
+        else if (addToItemActions.indexOf(selectedAction) >= 0) {
+            int index = addToItemActions.indexOf(selectedAction);
+            // 找到所有的Item项
+
+            selectedTextItem->setParentItem((*control.getMyItems())[index]);
+            selectedTextItem->setPos(QPointF(-60,-80));
+            selectedTextItem->setZValue(selectedItem->zValue()+1);
+            qDebug() << "set item "<< index << "as a child of " << (*control.getMyItems())[index]->name();
+            //            emit removeItem(selectedTextItem);  //
+            // 这里实现将该TextItem设置为其子Item的操作
+        }
+
+        //        else if (selectedAction == addToItemAction) {
+        //            emit removeItem(selectedTextItem);  // 删除选中Item
+        //            // 这里实现删除操作
+        //        }
         else{
             qDebug() << "not defined Action";
         }
