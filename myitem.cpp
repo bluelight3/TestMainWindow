@@ -157,6 +157,12 @@ QPixmap MyItem::type2Image(MyItem::MyType myType)
         return QPixmap(":/images/circuit/capacitor.png");
     if (myType == MyTest2)
         return QPixmap(":/images/circuit/inductor.png");
+    if (myType == MyTest3)
+        return QPixmap(":/images/circuit/resistor.png");
+    if (myType == MyTest4)
+        return QPixmap(":/images/circuit/power.png");
+    if (myType == MyTest5)
+        return QPixmap(":/images/circuit/ground.png");
 }
 
 void MyItem::setLength(int length)
@@ -209,7 +215,7 @@ void MyItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
         setCursor(Qt::ClosedHandCursor);
     }
-//    emit selectItem();
+//    QGraphicsItem::mousePressEvent(event);
 }
 
 //void MyItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -302,6 +308,11 @@ void MyItem::acceptSetToggle(const QString &toggle)
     // 找到所有的Item项
 
     myTextItem->setPlainText(toggle);
+    if (this->childItems().size()>0)
+    {
+        for (auto item : this->childItems())
+            scene()->removeItem(item);
+    }
     myTextItem->setParentItem(this);
     myTextItem->setPos(QPointF(-60,-80));
     myTextItem->setZValue(this->zValue()+1);

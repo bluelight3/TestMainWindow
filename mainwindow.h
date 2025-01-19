@@ -66,8 +66,9 @@ public:
 
 
     // 文件项目相关 (打开，保存)
-    QString m_projectName;
-    QString m_projectSaveName;
+    QString m_projectName;              // 项目名称
+    QString m_projectSaveName;          // 项目保存时使用名称
+    int m_projectCount;
 
     // 状态栏相关
     QLabel* m_tmpLabel;
@@ -94,7 +95,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent* event);
     void dropEvent(QDropEvent* event);
-
+    void closeEvent(QCloseEvent* event);
 
 public:
     bool eventFilter(QObject* obj,QEvent * event);
@@ -118,6 +119,10 @@ private:
 
     int m_myItem1_count;
     int m_myItem2_count;
+    int m_myItem3_count;
+    int m_myItem4_count;
+    int m_myItem5_count;
+
     QGraphicsItem * m_selectedItem;
     QGraphicsScene* m_scene;
     QMap<QLabel*,QGraphicsItem*> qmap_myItem;
@@ -133,6 +138,7 @@ public:
     void openProject();
     void saveProject();
     void saveAsProject();
+    void initializeProject();
 
     void loadStyle(const QString &qssFile);
 
@@ -149,6 +155,7 @@ public slots:
     void acceptAddArrow(Arrow* myItem);
     void acceptMoveItem(MyItem* myItem,QPointF oldPos);
     void acceptSetToggle(QString myToggle);
+    void acceptSearch(QString mySearchText);
     void updateWindow();                // 更新界面
 
 private slots:
@@ -181,6 +188,7 @@ private slots:
 
     void testUndo();
     void testRedo();
+    void testSearch();
 
     void sceneScaleChanged(const QString &scale);
 

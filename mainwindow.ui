@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>892</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -46,6 +46,7 @@
     <addaction name="actionPaste"/>
     <addaction name="actionDelete"/>
     <addaction name="actionSelectAll"/>
+    <addaction name="actionSearchItem"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -79,6 +80,12 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -417,10 +424,25 @@
     <string>Ctrl+A</string>
    </property>
   </action>
+  <action name="actionSearchItem">
+   <property name="icon">
+    <iconset resource="diagramscene.qrc">
+     <normaloff>:/images/search.png</normaloff>:/images/search.png</iconset>
+   </property>
+   <property name="text">
+    <string>搜索图元</string>
+   </property>
+   <property name="toolTip">
+    <string>搜索图元</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="myimages.qrc"/>
   <include location="diagramscene.qrc"/>
+  <include location="myimages.qrc"/>
  </resources>
  <connections/>
 </ui>

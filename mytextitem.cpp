@@ -25,6 +25,7 @@ void MyTextItem::focusOutEvent(QFocusEvent *event){
     }
     else{//其他情况，包括下面点击回车的情况，编辑成功，发送信号给父对象
         setTextInteractionFlags(Qt::NoTextInteraction);
+        setPlainText(toPlainText());
         emit mySignal(toPlainText());
     }
     QGraphicsItem::focusOutEvent(event);

@@ -34,5 +34,6 @@
         <file>images/ungroup.png</file>
         <file>images/zoomin.png</file>
         <file>images/zoomout.png</file>
+        <file>images/search.png</file>
     </qresource>
 </RCC>

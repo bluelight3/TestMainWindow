@@ -17,6 +17,12 @@ public:
 
 private:
     Ui::SearchWidget *ui;
+
+signals:
+    void search(QString);
+
+private slots:
+    void on_txt_search_returnPressed();
 };
 
 #endif // SEARCHWIDGET_H

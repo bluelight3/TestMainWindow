@@ -53,7 +53,7 @@ void MyView::mousePressEvent(QMouseEvent *event)
             QGraphicsView::mousePressEvent(event);
         }
         else{
-            emit selectItem(m_selectedItem);
+//            emit selectItem(m_selectedItem);
         }
         QPoint mousePos = event->pos();
         m_selectedItem = dynamic_cast<MyItem*>(itemAt(mousePos));
@@ -212,8 +212,10 @@ void MyView::paintEvent(QPaintEvent *event)
 void MyView::contextMenuEvent(QContextMenuEvent *event)
 {
 
-    MyItem * selectedItem = static_cast<MyItem*>(itemAt(event->pos()));
-    MyTextItem * selectedTextItem = static_cast<MyTextItem*>(itemAt(event->pos()));
+    MyItem * selectedItem = dynamic_cast<MyItem*>(itemAt(event->pos()));
+    MyTextItem * selectedTextItem = dynamic_cast<MyTextItem*>(itemAt(event->pos()));
+//    qDebug() << selectedItem->type();
+//    qDebug() << selectedTextItem->type();
 
     if (!selectedItem && !selectedTextItem){
         QMenu menu;
@@ -283,7 +285,9 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
             qDebug() << "not defined Action";
         }
     }
-    else if ( selectedItem->diagramType()== MyItem::MyTest1 || selectedItem->diagramType()== MyItem::MyTest2){
+
+
+    else if ( selectedItem && selectedItem->Type ==  QGraphicsItem::UserType + MYITEM_TYPE_OFFSET){
         QMenu menu;
         QAction *moveAction = menu.addAction("移回");
         QAction *brushAction = menu.addAction("刷新");
@@ -365,7 +369,7 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
 
 
 
-    else if ( selectedTextItem){
+    else if ( selectedTextItem && selectedTextItem->Type == QGraphicsItem::UserType + MYTEXTITEM_TYPE_OFFSET){
         QMenu menu;
         QAction *moveAction = menu.addAction("移回");
         QAction *cutAction = menu.addAction("剪切");
@@ -442,8 +446,9 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
         else if (addToItemActions.indexOf(selectedAction) >= 0) {
             int index = addToItemActions.indexOf(selectedAction);
             // 找到所有的Item项
+            selectedItem = (*control.getMyItems())[index]; // 复用一下这个变量作为父Item
 
-            selectedTextItem->setParentItem((*control.getMyItems())[index]);
+            selectedTextItem->setParentItem((selectedItem));
             selectedTextItem->setPos(QPointF(-60,-80));
             selectedTextItem->setZValue(selectedItem->zValue()+1);
             qDebug() << "set item "<< index << "as a child of " << (*control.getMyItems())[index]->name();
@@ -463,6 +468,7 @@ void MyView::contextMenuEvent(QContextMenuEvent *event)
     else{
         QGraphicsView::contextMenuEvent(event);
     }
+    QGraphicsView::contextMenuEvent(event);
 }
 
 void MyView::acceptSetMyDragMode()

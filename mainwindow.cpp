@@ -19,7 +19,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // 初始化
     setAcceptDrops(true);
+
     control.createMyItemWidget();
+    control.createMySearchWidget();
+
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
     m_selectedItem = NULL;
@@ -31,6 +34,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_undoStack = new QUndoStack(this);
     m_undoStack->setUndoLimit( 10 );
+
+    // 文件项目相关 (打开，保存)
+    m_projectName = "Project";
+    m_projectSaveName = "SaveProject";
+    m_projectCount = 0;
 
     //
 
@@ -119,13 +127,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     myItem4 = new MyItem;
     myItem4->setColor(Qt::magenta);
-    myItem4->setType(MyItem::MyTest2);
+    myItem4->setType(MyItem::MyTest4);
     myItem4->setName("test4_name");
     myItem4->setPoint(QPointF(0.0,0.0));
 
     myItem5 = new MyItem;
     myItem5->setColor(Qt::yellow);
-    myItem5->setType(MyItem::MyTest2);
+    myItem5->setType(MyItem::MyTest5);
     myItem5->setName("test5_name");
     myItem5->setPoint(QPointF(0.0,0.0));
 
@@ -151,8 +159,11 @@ MainWindow::MainWindow(QWidget *parent)
 //    addItem(myDiagramTextItem);
 
 
-    m_myItem1_count = 1;
-    m_myItem2_count = 1;
+    m_myItem1_count = 0;
+    m_myItem2_count = 0;
+    m_myItem3_count = 0;
+    m_myItem4_count = 0;
+    m_myItem5_count = 0;
     //
     sceneScaleCombo = new QComboBox;
     QStringList scales;
@@ -214,7 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionStatus,SIGNAL(triggered()),this, SLOT(showStatus()));
     connect(ui->actionGenerateProject,SIGNAL(triggered()),this,SLOT(testGenerateProject()));
-
+    connect(ui->actionSearchItem,SIGNAL(triggered()),SLOT(testSearch()) );
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
     connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
@@ -383,6 +394,10 @@ void MainWindow::initQMap()
 {
     qmap_myItem[m_label] = myItem1;
     qmap_myItem[m_label2] = myItem2;
+    qmap_myItem[m_label3] = myItem3;
+    qmap_myItem[m_label4] = myItem4;
+    qmap_myItem[m_label5] = myItem5;
+
     qmap_myItem[m_labelText] = myDiagramTextItem;
     qmap_myItem[m_labelText2] = myTextItem;
 }
@@ -562,6 +577,22 @@ void MainWindow::dropEvent(QDropEvent *event)
     }
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+//    MyHelper::ShowMessageBoxQuesion()
+    QMessageBox::StandardButton ret =  QMessageBox::question(this,"图元界面软件","是否保存已打开的项目?",QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    if (ret == QMessageBox::Yes){
+        // 打开另存为界面
+        saveAsProject();
+        event->accept();
+    }
+    else if (ret == QMessageBox::No)
+        event->accept();
+    else if (ret == QMessageBox::Cancel)
+        event->ignore();
+//    MyHelper::ShowMessageBoxQuesion(tr("确定关闭吗?"));
+}
+
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
     if (obj == this->m_label){
@@ -684,12 +715,22 @@ void MainWindow::acceptInsertItem()
 //        connect(tmpInsertedItem, &MyItem::selectItem,
 //                this, &MainWindow::myItemSelected);
 
-        if (tmpItem->diagramType() == MyItem::MyTest1){
-            tmpItem->setName(tmpItem->name() + QString::number(m_myItem1_count++));
+        if (tmpInsertedItem ->diagramType() == MyItem::MyTest1){
+            tmpInsertedItem ->setName(tmpItem->name() + QString::number(m_myItem1_count++));
         }
-        else if (tmpItem->diagramType() == MyItem::MyTest2) {
-            tmpItem->setName(tmpItem->name() + QString::number(m_myItem2_count++));
+        else if (tmpInsertedItem ->diagramType() == MyItem::MyTest2) {
+            tmpInsertedItem ->setName(tmpItem->name() + QString::number(m_myItem2_count++));
         }
+        else if (tmpInsertedItem ->diagramType() == MyItem::MyTest3) {
+            tmpInsertedItem ->setName(tmpItem->name() + QString::number(m_myItem3_count++));
+        }
+        else if (tmpInsertedItem ->diagramType() == MyItem::MyTest4) {
+            tmpInsertedItem ->setName(tmpItem->name() + QString::number(m_myItem4_count++));
+        }
+        else if (tmpInsertedItem ->diagramType() == MyItem::MyTest5) {
+            tmpInsertedItem ->setName(tmpItem->name() + QString::number(m_myItem5_count++));
+        }
+
 
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
         control.getMyItems()->push_back(tmpInsertedItem);
@@ -789,6 +830,15 @@ void MainWindow::acceptClipBoardInsertItem(QPointF point)
         else if (tmpItem->diagramType() == MyItem::MyTest2) {
             tmpItem->setName(tmpItem->name() + QString::number(m_myItem2_count++));
         }
+        else if (tmpItem->diagramType() == MyItem::MyTest3) {
+            tmpItem->setName(tmpItem->name() + QString::number(m_myItem3_count++));
+        }
+        else if (tmpItem->diagramType() == MyItem::MyTest4) {
+            tmpItem->setName(tmpItem->name() + QString::number(m_myItem4_count++));
+        }
+        else if (tmpItem->diagramType() == MyItem::MyTest5) {
+            tmpItem->setName(tmpItem->name() + QString::number(m_myItem5_count++));
+        }
 
         MyItem* tmpInsertedItem = new MyItem(tmpItem);
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
@@ -827,13 +877,8 @@ void MainWindow::acceptClipBoardInsertItem(QGraphicsItem* myItem)
     if (tmpItem)
     {
         control.setMyMode(Mode::InsertItem);
-        if (tmpItem->diagramType() == MyItem::MyTest1){
-            tmpItem->setName(tmpItem->name() + "_copy" + QString::number(m_myItem1_count++));
-            tmpItem->setColor(Qt::blue);
-        }
-        else if (tmpItem->diagramType() == MyItem::MyTest2) {
-            tmpItem->setName(tmpItem->name() + "_copy" + QString::number(m_myItem2_count++));
-            tmpItem->setColor(Qt::green);
+        if (tmpItem->Type == QGraphicsItem::UserType + MYITEM_TYPE_OFFSET){
+            tmpItem->setName(tmpItem->name() + "_copy");
         }
 
         MyItem* tmpInsertedItem = new MyItem(tmpItem);
@@ -845,6 +890,7 @@ void MainWindow::acceptClipBoardInsertItem(QGraphicsItem* myItem)
     else if (myTmpDigramTextItem){
         // 设置自己的名字?
     }
+
 
 //    m_scene->addItem(tmpItem);
 //    qvec_MyItemOnView->push_back(tmpItem);
@@ -873,12 +919,22 @@ void MainWindow::acceptClear()
         delete qvec_myItemOnView;
     }
     qvec_MyItemOnView->clear();
+    control.getMyItems()->clear();
+    m_myItem1_count = 0;
+    m_myItem2_count = 0;
+    m_myItem3_count = 0;
+    m_myItem4_count = 0;
+    m_myItem5_count = 0;
 }
 
 void MainWindow::acceptRemoveItem(QGraphicsItem* myItem)
 {
     // 删除
     m_scene->removeItem(myItem);
+    MyItem* tmpItem = dynamic_cast<MyItem*>(myItem) ;
+    if (tmpItem)
+        control.getMyItems()->removeOne(tmpItem);
+
     qvec_MyItemOnView->removeOne(myItem);
 }
 
@@ -970,6 +1026,20 @@ void MainWindow::acceptSetToggle(QString myToggle)
     m_scene->addItem(myTextItem);
 }
 
+void MainWindow::acceptSearch(QString mySearchText)
+{
+    if (mySearchText.isEmpty()) return;
+
+    for (auto item:m_view->items()){
+        MyItem* tmpItem = dynamic_cast<MyItem*>(item);
+        if ( tmpItem ){
+            if (tmpItem->name().contains(mySearchText,Qt::CaseInsensitive)){
+                tmpItem->setSelected(true);
+            }
+        }
+    }
+}
+
 void MainWindow::updateWindow()
 {
     m_scene->update();
@@ -978,33 +1048,45 @@ void MainWindow::updateWindow()
 
 void MainWindow::testNew()
 {
+    // 新建一个项目
+    m_projectName = "Project" + QString::number(m_projectCount++);
+    this->setWindowTitle(m_projectName);
+    initializeProject();
+    // 判断上一个项目是否保存过 如果没有保存的话，先提示是否保存再新建
 
+    //
+    control.m_bUpdateFlag = false;
+    control.m_bNewProjectFlag = true;
 }
 
 void MainWindow::testOpen()
 {
-    m_projectName = QFileDialog::getOpenFileName(this,tr("open File"),"./" , tr("(*.ini)"));
+    m_projectName = QFileDialog::getOpenFileName(this,tr("open File"),MyHelper::GetCurrentPath()+"ini" , tr("(*.ini)"));
     if (m_projectName.isEmpty()) return;
     // 实现在界面中打开该文件名，读取相关参数，并对整个程序进行相关配置
     openProject();
+    m_projectSaveName = m_projectName;
+    control.m_bUpdateFlag = false;
+    control.m_bNewProjectFlag = false;
 }
 
 void MainWindow::testSave()
 {
 
-    if (m_projectName.size()<0)
-        m_projectName = QFileDialog::getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.txt)"));
+    if (control.m_bNewProjectFlag == true)
+        m_projectSaveName = QFileDialog::getSaveFileName(this,tr("Save File"),MyHelper::GetCurrentPath()+"ini/"+m_projectName,tr("Ini File(*.ini)"));
     saveProject();
 
     // 默认保存成功
     control.m_bUpdateFlag = false;
+    control.m_bNewProjectFlag = false;
     this->setWindowTitle(this->windowTitle().remove('*'));
 }
 
 void MainWindow::testSaveAs()
 {
     saveAsProject();
-    if (m_projectSaveName.size() != 0){
+    if (!m_projectSaveName.isEmpty()){
         control.m_bUpdateFlag = false;
         this->setWindowTitle(this->windowTitle().remove('*'));
         m_projectName = m_projectSaveName;
@@ -1026,6 +1108,9 @@ void MainWindow::testCopy()
     QByteArray itemData;
     QDataStream dataStream(&itemData,QIODevice::WriteOnly); //创建数据流
 
+
+    if (m_scene->selectedItems().size() == 0)
+        return;
     // 现在需要先创建一个新的Item
     tmpItem =  dynamic_cast<MyItem*>(m_scene->selectedItems().first());
     myTmpDigramTextItem = dynamic_cast<DiagramTextItem*>(m_scene->selectedItems().first());
@@ -1083,8 +1168,10 @@ void MainWindow::testExit()
 void MainWindow::testDelete()
 {
     // 只选中一个的情况
-    if (m_scene->selectedItems().size()>0)
+    if (m_scene->selectedItems().size()>0){
         acceptRemoveItem(m_scene->selectedItems().first());
+
+    }
 
     // 删除多个的情况
     // 目前逻辑为删除所有界面上被选中的item
@@ -1363,6 +1450,15 @@ void MainWindow::testRedo()
     m_undoStack->redo();
 }
 
+void MainWindow::testSearch()
+{
+
+    SearchWidget* mySearchWidget = control.getMySearchWidget();
+    connect(mySearchWidget,SIGNAL(search(QString)),this,SLOT(acceptSearch(QString)));
+    mySearchWidget->show();
+
+}
+
 
 
 /**
@@ -1464,7 +1560,7 @@ void MainWindow::openProject()
 **********************************************/
 void MainWindow::saveProject()
 {
-    QSettings settings(m_projectName,QSettings::IniFormat);
+    QSettings settings(m_projectSaveName,QSettings::IniFormat);
     settings.setIniCodec("utf-8");
     settings.clear();
     int cnt = 0;
@@ -1514,10 +1610,10 @@ void MainWindow::saveProject()
 void MainWindow::saveAsProject()
 {
     QFileDialog fileDialog;
-    m_projectSaveName = fileDialog.getSaveFileName(this,tr("Open File"),"D://codes//Qt_projects//testGraphics//saved",tr("Text File(*.ini)"));
-    if(m_projectSaveName == "")
+    m_projectSaveName = fileDialog.getSaveFileName(this,tr("Save File"),MyHelper::GetCurrentPath()+"/ini/"+m_projectName,tr("Ini File(*.ini)"));
+    if(m_projectSaveName.isEmpty())
     {
-        QMessageBox::warning(this,tr("错误"),tr("打开文件失败"));
+        qDebug() << " SaveAs Canceled";
         return;
     }
     else
@@ -1564,6 +1660,34 @@ void MainWindow::saveAsProject()
 
         QMessageBox::warning(this,tr("提示"),tr("保存文件成功"));
     }
+}
+
+/**********************************************
+* @projectName   TestMainWindow
+* @brief         初始化项目
+* @func          initializeProject
+* @param         void
+* @return        void
+* @author        gl
+* @date          2025-01-19
+* @other         初始化一个项目，清空界面所有信息，将所有相关参数初始化
+**********************************************/
+void MainWindow::initializeProject()
+{
+
+    qvec_MyItemOnView->clear();
+    m_undoStack->clear();
+    control.setMyMode(Mode::MoveItem);
+    control.getMyItems()->clear();
+
+
+    m_myItem1_count = 0;
+    m_myItem2_count = 0;
+    m_myItem3_count = 0;
+    m_myItem4_count = 0;
+    m_myItem5_count = 0;
+
+    m_view->clear();
 }
 
 

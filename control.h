@@ -4,6 +4,7 @@
 #include "myitemwidget.h"
 #include "generateprojectform.h"
 #include "generateprojectthread.h"
+#include "searchwidget.h"
 
 
 enum Mode { InsertItem, InsertLine, InsertText, MoveItem,nullItem};
@@ -35,8 +36,17 @@ public:
 
     QVector<MyItem *> *getMyItems() const;
     bool m_bUpdateFlag;   // 表示界面是否更新过
+    bool m_bNewProjectFlag;   // 表示是否是一个新的项目
     void showProperty(MyItem *myItem);
     void showMyItemWidget();
+
+
+    void setMySearchWidget(SearchWidget *mySearchWidget);
+    SearchWidget *getMySearchWidget() const;
+    void createMySearchWidget();
+    void destroyMySearchWidget();
+
+
 
 
 private:
@@ -44,6 +54,7 @@ private:
     MyItemWidget* m_myItemWidget;
     GenerateProjectForm* m_myGenerateProjectForm;
     GenerateProjectThread* m_myGenerateProjectThread;
+    SearchWidget* m_mySearchWidget;
     QVector<MyItem *> *m_myItems;       //目前所创建的所有Items 现在交由controls管理
 
 public slots:

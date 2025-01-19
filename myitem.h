@@ -16,6 +16,7 @@ public:
 
     MyItem();
     MyItem(MyItem* myItem);
+    enum { Type = UserType + MYITEM_TYPE_OFFSET};
     enum MyType {MyTest1,MyTest2,MyTest3,MyTest4,MyTest5};
 
     QRectF boundingRect() const override;       //返回图像外接矩形

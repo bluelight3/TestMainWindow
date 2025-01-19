@@ -31,7 +31,8 @@ SOURCES += \
     myitemwidget.cpp \
     myscene.cpp \
     mytextitem.cpp \
-    myview.cpp
+    myview.cpp \
+    searchwidget.cpp
 
 HEADERS += \
     MyHelper.h \
@@ -49,13 +50,15 @@ HEADERS += \
     myitemwidget.h \
     myscene.h \
     mytextitem.h \
-    myview.h
+    myview.h \
+    searchwidget.h
 
 FORMS += \
     generateprojectform.ui \
     loadwidget.ui \
     mainwindow.ui \
-    myitemwidget.ui
+    myitemwidget.ui \
+    searchwidget.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

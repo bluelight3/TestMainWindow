@@ -23,4 +23,12 @@
 //#include "mainwindow.h"
 //#define SHOW_LOADWIDGET
 
+
+#define MYITEM_TYPE_OFFSET   7
+
+
+#define MYTEXTITEM_TYPE_OFFSET   10
+
+
+
 #endif // MAINWINDOW_H

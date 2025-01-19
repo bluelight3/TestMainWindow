@@ -7,7 +7,7 @@ Control::Control()
     m_myMode = nullItem;
 
     m_bUpdateFlag = false;
-
+    m_bNewProjectFlag = true;
 
 }
 
@@ -108,6 +108,26 @@ QVector<MyItem *> *Control::getMyItems() const
 void Control::showMyItemWidget()
 {
     m_myItemWidget->show();
+}
+
+void Control::setMySearchWidget(SearchWidget *mySearchWidget)
+{
+    m_mySearchWidget = mySearchWidget;
+}
+
+void Control::createMySearchWidget()
+{
+    m_mySearchWidget = new SearchWidget;
+}
+
+void Control::destroyMySearchWidget()
+{
+    delete m_mySearchWidget;
+}
+
+SearchWidget *Control::getMySearchWidget() const
+{
+    return m_mySearchWidget;
 }
 
 void Control::showProperty(MyItem *myItem)

@@ -9,6 +9,8 @@ class MyTextItem : public QGraphicsTextItem
 {
     Q_OBJECT
 public:
+    enum { Type = UserType + MYTEXTITEM_TYPE_OFFSET };
+
     MyTextItem(QGraphicsItem *parent = nullptr);
 private:
     QString m_store_str;
