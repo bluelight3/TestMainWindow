@@ -21,7 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
     setAcceptDrops(true);
 
     control.createMyItemWidget();
-    control.createMySearchWidget();
+    control.createSearchWidget();
+    control.createCpuMemoryWidget();
 
     qvec_MyItemOnView = new QVector<QGraphicsItem*>;
 
@@ -212,6 +213,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionCopy,SIGNAL(triggered()),this,SLOT(testCopy()));
     connect(ui->actionPaste,SIGNAL(triggered()),this,SLOT(testPaste()));
     connect(ui->actionDelete,SIGNAL(triggered()),this,SLOT(testDelete()));
+    connect(ui->actionSelectAll,SIGNAL(triggered()),this,SLOT(testSelectAll()) );
 
     connect(ui->actionToFront,SIGNAL(triggered()),this,SLOT(testToFront()));
     connect(ui->actionToBack,SIGNAL(triggered()),this,SLOT(testToBack()));
@@ -225,7 +227,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionStatus,SIGNAL(triggered()),this, SLOT(showStatus()));
     connect(ui->actionGenerateProject,SIGNAL(triggered()),this,SLOT(testGenerateProject()));
-    connect(ui->actionSearchItem,SIGNAL(triggered()),SLOT(testSearch()) );
+    connect(ui->actionSearchItem,SIGNAL(triggered()),this,SLOT(testSearchItem()) );
+    connect(ui->actionResourceStatus,SIGNAL(triggered()),this,SLOT(testResourceStatus()));
 
     connect(ui->actionConnectLine,SIGNAL(triggered()),this,SLOT(testConnectLine()));
     connect(ui->actionExit,SIGNAL(triggered()),this,SLOT(testExit()));
@@ -1073,8 +1076,12 @@ void MainWindow::testOpen()
 void MainWindow::testSave()
 {
 
-    if (control.m_bNewProjectFlag == true)
+    if (control.m_bNewProjectFlag == true){
         m_projectSaveName = QFileDialog::getSaveFileName(this,tr("Save File"),MyHelper::GetCurrentPath()+"ini/"+m_projectName,tr("Ini File(*.ini)"));
+        if (m_projectSaveName.isEmpty()) return;
+    }
+
+
     saveProject();
 
     // 默认保存成功
@@ -1395,8 +1402,9 @@ void MainWindow::testBold()
     //    font.setUnderline(underlineAction->isChecked());
 
     //    scene->setFont(font);
+
     if (m_scene->selectedItems().isEmpty()) return;
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
+    MyTextItem * selectedTextItem = dynamic_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         // 未来按钮改成Checked形式
@@ -1413,7 +1421,7 @@ void MainWindow::testBold()
 void MainWindow::testItalic()
 {
     if (m_scene->selectedItems().isEmpty()) return;
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
+    MyTextItem * selectedTextItem = dynamic_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         QFont font = selectedTextItem->font();
@@ -1426,7 +1434,7 @@ void MainWindow::testItalic()
 void MainWindow::testUnderLine()
 {
     if (m_scene->selectedItems().isEmpty()) return;
-    MyTextItem * selectedTextItem = qgraphicsitem_cast<MyTextItem*>(m_scene->selectedItems().first());
+    MyTextItem * selectedTextItem = dynamic_cast<MyTextItem*>(m_scene->selectedItems().first());
 
     if (selectedTextItem){
         QFont font = selectedTextItem->font();
@@ -1450,13 +1458,19 @@ void MainWindow::testRedo()
     m_undoStack->redo();
 }
 
-void MainWindow::testSearch()
+void MainWindow::testSearchItem()
 {
 
-    SearchWidget* mySearchWidget = control.getMySearchWidget();
+    SearchWidget* mySearchWidget = control.getSearchWidget();
     connect(mySearchWidget,SIGNAL(search(QString)),this,SLOT(acceptSearch(QString)));
     mySearchWidget->show();
 
+}
+
+void MainWindow::testResourceStatus()
+{
+    CpuMemoryWidget* cpuMemoryWidget = control.getCpuMemoryWidget();
+    cpuMemoryWidget->show();
 }
 
 

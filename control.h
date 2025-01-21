@@ -5,7 +5,7 @@
 #include "generateprojectform.h"
 #include "generateprojectthread.h"
 #include "searchwidget.h"
-
+#include "cpumemorywidget.h"
 
 enum Mode { InsertItem, InsertLine, InsertText, MoveItem,nullItem};
 class Control : public QObject
@@ -41,20 +41,27 @@ public:
     void showMyItemWidget();
 
 
-    void setMySearchWidget(SearchWidget *mySearchWidget);
-    SearchWidget *getMySearchWidget() const;
-    void createMySearchWidget();
-    void destroyMySearchWidget();
+    void setSearchWidget(SearchWidget *mySearchWidget);
+    SearchWidget *getSearchWidget() const;
+    void createSearchWidget();
+    void destroySearchWidget();
 
 
 
+
+    CpuMemoryWidget *getCpuMemoryWidget() const;
+    void setCpuMemoryWidget(CpuMemoryWidget *cpuMemoryWidget);
+    void createCpuMemoryWidget();
+    void destroyCpuMemoryWidget();
 
 private:
     Mode m_myMode;
     MyItemWidget* m_myItemWidget;
-    GenerateProjectForm* m_myGenerateProjectForm;
-    GenerateProjectThread* m_myGenerateProjectThread;
-    SearchWidget* m_mySearchWidget;
+    GenerateProjectForm* m_generateProjectForm;
+    GenerateProjectThread* m_generateProjectThread;
+    SearchWidget* m_searchWidget;
+    CpuMemoryWidget* m_cpuMemoryWidget;
+
     QVector<MyItem *> *m_myItems;       //目前所创建的所有Items 现在交由controls管理
 
 public slots:

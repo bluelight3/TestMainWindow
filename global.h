@@ -18,6 +18,7 @@
 #include <QTimer>
 #include <QUndoCommand>
 #include <QUndoStack>
+#include <QProcess>
 
 //#include <qobject.h>
 //#include "mainwindow.h"

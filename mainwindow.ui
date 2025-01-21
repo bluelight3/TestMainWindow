@@ -20,7 +20,7 @@
      <x>0</x>
      <y>0</y>
      <width>892</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -46,7 +46,6 @@
     <addaction name="actionPaste"/>
     <addaction name="actionDelete"/>
     <addaction name="actionSelectAll"/>
-    <addaction name="actionSearchItem"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -72,11 +71,20 @@
     </property>
     <addaction name="actionGenerateProject"/>
    </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>界面</string>
+    </property>
+    <addaction name="actionSearchItem"/>
+    <addaction name="separator"/>
+    <addaction name="actionResourceStatus"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
    <addaction name="menu_3"/>
    <addaction name="menu_4"/>
    <addaction name="menu_5"/>
+   <addaction name="menu_6"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -437,6 +445,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionResourceStatus">
+   <property name="text">
+    <string>资源状态</string>
+   </property>
+   <property name="toolTip">
+    <string>资源状态</string>
    </property>
   </action>
  </widget>

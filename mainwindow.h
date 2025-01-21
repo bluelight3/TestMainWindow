@@ -188,7 +188,8 @@ private slots:
 
     void testUndo();
     void testRedo();
-    void testSearch();
+    void testSearchItem();
+    void testResourceStatus();
 
     void sceneScaleChanged(const QString &scale);
 

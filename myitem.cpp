@@ -214,8 +214,9 @@ void MyItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     else
     {
         setCursor(Qt::ClosedHandCursor);
+        QGraphicsItem::mousePressEvent(event);
     }
-//    QGraphicsItem::mousePressEvent(event);
+
 }
 
 //void MyItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)

@@ -45,57 +45,57 @@ void Control::destroyMyItemWidget()
 
 void Control::createMyGenerateProjectForm()
 {
-    m_myGenerateProjectForm = new GenerateProjectForm();
+    m_generateProjectForm = new GenerateProjectForm();
 }
 
 void Control::destroyMyGenerateProjectForm()
 {
-    delete m_myGenerateProjectForm;
+    delete m_generateProjectForm;
 }
 
 void Control::closeMyGenerateProjectForm()
 {
-    m_myGenerateProjectForm->close();
+    m_generateProjectForm->close();
 }
 
 GenerateProjectForm *Control::getMyGenerateProjectForm() const
 {
-    return m_myGenerateProjectForm;
+    return m_generateProjectForm;
 }
 
 void Control::setMyGenerateProjectForm(GenerateProjectForm *value)
 {
-    m_myGenerateProjectForm = value;
+    m_generateProjectForm = value;
 }
 
 void Control::createMyGenerateProjectThread()
 {
-    m_myGenerateProjectThread = new GenerateProjectThread();
+    m_generateProjectThread = new GenerateProjectThread();
 
-    connect(m_myGenerateProjectThread,SIGNAL(generateProject(int)),
-            m_myGenerateProjectForm,SLOT(updateProgress(int)));
-    connect(m_myGenerateProjectThread,SIGNAL(generated()),
+    connect(m_generateProjectThread,SIGNAL(generateProject(int)),
+            m_generateProjectForm,SLOT(updateProgress(int)));
+    connect(m_generateProjectThread,SIGNAL(generated()),
             this,SLOT(closeMyGenerateProjectForm()));
 }
 
 void Control::destroyMyGenerateProjectThread()
 {
-    delete m_myGenerateProjectThread;
+    delete m_generateProjectThread;
 }
 
 GenerateProjectThread *Control::getMyGenerateProjectThread() const
 {
-    return m_myGenerateProjectThread;
+    return m_generateProjectThread;
 }
 
 void Control::setMyGenerateProjectThread(GenerateProjectThread *value)
 {
-    m_myGenerateProjectThread = value;
+    m_generateProjectThread = value;
 }
 
 void Control::runMyGenerateProjectThread()
 {
-    m_myGenerateProjectThread->start();
+    m_generateProjectThread->start();
 }
 
 QVector<MyItem *> *Control::getMyItems() const
@@ -110,25 +110,46 @@ void Control::showMyItemWidget()
     m_myItemWidget->show();
 }
 
-void Control::setMySearchWidget(SearchWidget *mySearchWidget)
+void Control::setSearchWidget(SearchWidget *mySearchWidget)
 {
-    m_mySearchWidget = mySearchWidget;
+    m_searchWidget = mySearchWidget;
 }
 
-void Control::createMySearchWidget()
+void Control::createSearchWidget()
 {
-    m_mySearchWidget = new SearchWidget;
+    m_searchWidget = new SearchWidget;
 }
 
-void Control::destroyMySearchWidget()
+void Control::destroySearchWidget()
 {
-    delete m_mySearchWidget;
+    delete m_searchWidget;
 }
 
-SearchWidget *Control::getMySearchWidget() const
+CpuMemoryWidget *Control::getCpuMemoryWidget() const
 {
-    return m_mySearchWidget;
+    return m_cpuMemoryWidget;
 }
+
+void Control::setCpuMemoryWidget(CpuMemoryWidget *cpuMemoryWidget)
+{
+    m_cpuMemoryWidget = cpuMemoryWidget;
+}
+
+void Control::createCpuMemoryWidget()
+{
+    m_cpuMemoryWidget = new CpuMemoryWidget;
+}
+
+void Control::destroyCpuMemoryWidget()
+{
+    delete m_cpuMemoryWidget;
+}
+
+SearchWidget *Control::getSearchWidget() const
+{
+    return m_searchWidget;
+}
+
 
 void Control::showProperty(MyItem *myItem)
 {
@@ -142,8 +163,8 @@ void Control::showProperty(MyItem *myItem)
     m_myItemWidget->setItemPixMap(myItem->image());
     m_myItemWidget->setTitleName(myItem->name());
 
-    QObject::connect(m_myItemWidget,SIGNAL(setToggle(QString)),this,SLOT(acceptSetToggle(QString)));
-    QObject::connect(m_myItemWidget,SIGNAL(setName(QString)),this,SLOT(acceptSetName(QString)));
+    QObject::connect(m_myItemWidget,SIGNAL(setToggle(QString)),myItem,SLOT(acceptSetToggle(QString)));
+    QObject::connect(m_myItemWidget,SIGNAL(setName(QString)),myItem,SLOT(acceptSetName(QString)));
 
     showMyItemWidget();
 }

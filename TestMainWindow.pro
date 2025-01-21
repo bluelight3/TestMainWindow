@@ -20,6 +20,8 @@ SOURCES += \
     arrow.cpp \
     command.cpp \
     control.cpp \
+    cpumemorylabel.cpp \
+    cpumemorywidget.cpp \
     diagramitem.cpp \
     diagramtextitem.cpp \
     generateprojectform.cpp \
@@ -39,6 +41,8 @@ HEADERS += \
     arrow.h \
     command.h \
     control.h \
+    cpumemorylabel.h \
+    cpumemorywidget.h \
     diagramitem.h \
     diagramtextitem.h \
     generateprojectform.h \
@@ -54,6 +58,7 @@ HEADERS += \
     searchwidget.h
 
 FORMS += \
+    cpumemorywidget.ui \
     generateprojectform.ui \
     loadwidget.ui \
     mainwindow.ui \
