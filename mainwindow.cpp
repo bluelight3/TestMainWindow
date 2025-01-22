@@ -245,7 +245,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_timer,SIGNAL(timeout()),this,SLOT(updateWindow()));
 
     // 主界面更新的情况
-    connect(m_view,SIGNAL(insertItem()),this,SLOT(acceptDataChanged()));
+    connect(this,SIGNAL(dataChanged()),this,SLOT(acceptDataChanged()));
 
 //    m_view = ui->graphicsView;
 
@@ -505,7 +505,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     // 第三步：将数据放入QMimeData中
     QMimeData* mimeData = new QMimeData;
     // 第四步 将字节数组放入QMimeData中，此处Mime类型由自己定义
-    mimeData->setData("myimage/png",itemData);
+    mimeData->setData("application/myItem",itemData);
     QDrag * drag = new QDrag(this);  //创建QDrag 它用来移动数据
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
@@ -534,7 +534,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat("myimage/png")){
+    if (event->mimeData()->hasFormat("application/myItem")){
         event->setDropAction(Qt::CopyAction);       // 如果想要设置复制这里和下面函数设置成Qt::CopyAction即可
         event->accept();
     }
@@ -545,7 +545,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void MainWindow::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat("myimage/png")){
+    if (event->mimeData()->hasFormat("application/myItem")){
         event->setDropAction(Qt::CopyAction);   // 如果想要设置复制这里和下面函数设置成Qt::CopyAction即可
         event->accept();
     }
@@ -558,8 +558,8 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
     if (!m_view->geometry().contains(this->mapFromGlobal(QCursor::pos())))
     {
-        if (event->mimeData()->hasFormat("myimage/png")){
-            QByteArray itemData = event->mimeData()->data("myimage/png");
+        if (event->mimeData()->hasFormat("application/myItem")){
+            QByteArray itemData = event->mimeData()->data("application/myItem");
             QDataStream dataStream(&itemData,QIODevice::ReadOnly);
             QPixmap pixmap;
             QPoint offset;
@@ -569,10 +569,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 
             event->accept();
         }
-        if (!control.m_bUpdateFlag){
-            control.m_bUpdateFlag = true;
-            this->setWindowTitle(windowTitle()+"*");
-        }
+        emit dataChanged();
 
     }
     else{
@@ -775,6 +772,9 @@ void MainWindow::acceptInsertItem()
         tmpInsertedItem->setPos(m_view->mapFromGlobal(QCursor::pos()));
         m_scene->addItem(tmpInsertedItem);
         qvec_MyItemOnView->push_back(tmpInsertedItem);
+
+        QUndoCommand *addCommand = new AddCommand(tmpInsertedItem, m_scene);
+        m_undoStack->push(addCommand);
     }
 
     qDebug()<<m_view->mapFromParent(this->mapFromGlobal(QCursor::pos()));
@@ -785,6 +785,7 @@ void MainWindow::acceptInsertItem()
 //    m_scene->addItem(tmpItem);
 
     //    qvec_MyItemOnView->push_back(tmpItem);
+    emit dataChanged();
 }
 
 void MainWindow::acceptInsertTextItem()
@@ -806,6 +807,7 @@ void MainWindow::acceptInsertTextItem()
 
 
 //    qDebug()<<m_view->mapFromParent(this->mapFromGlobal(QCursor::pos()));
+    emit dataChanged();
     m_scene->update();
 }
 
@@ -912,6 +914,7 @@ void MainWindow::acceptClipBoardInsertItem(QGraphicsItem* myItem)
 
 //    m_scene->addItem(tmpItem);
 //    qvec_MyItemOnView->push_back(tmpItem);
+    emit dataChanged();
 }
 
 void MainWindow::acceptClear()
@@ -928,6 +931,7 @@ void MainWindow::acceptClear()
     m_myItem3_count = 0;
     m_myItem4_count = 0;
     m_myItem5_count = 0;
+    emit dataChanged();
 }
 
 void MainWindow::acceptRemoveItem(QGraphicsItem* myItem)
@@ -939,6 +943,7 @@ void MainWindow::acceptRemoveItem(QGraphicsItem* myItem)
         control.getMyItems()->removeOne(tmpItem);
 
     qvec_MyItemOnView->removeOne(myItem);
+    emit dataChanged();
 }
 
 void MainWindow::acceptSelectItem(QGraphicsItem* myItem)
@@ -1011,12 +1016,14 @@ void MainWindow::acceptAddArrow(Arrow *myItem)
         qvec_MyItemOnView->push_back(tmpArrow);
         //
     }
+    emit dataChanged();
 }
 
 void MainWindow::acceptMoveItem(MyItem *myItem, QPointF oldPos)
 {
     qDebug() << " new Movecommand is set, oldPos:" << oldPos;
     m_undoStack->push(new MoveCommand(myItem, oldPos));
+    emit dataChanged();
 }
 
 void MainWindow::acceptSetToggle(QString myToggle)
@@ -1069,6 +1076,7 @@ void MainWindow::testOpen()
     // 实现在界面中打开该文件名，读取相关参数，并对整个程序进行相关配置
     openProject();
     m_projectSaveName = m_projectName;
+    setWindowTitle(GetFileLastName(m_projectName));
     control.m_bUpdateFlag = false;
     control.m_bNewProjectFlag = false;
 }
@@ -1553,6 +1561,8 @@ void MainWindow::openProject()
         }
         else if (type == MyTextItem::Type){
             auto item0 = new MyTextItem();
+            QPointF tmpPos = settings.value(item+"/pos").toPointF();
+            QString tmpString = QString::fromLocal8Bit( settings.value(item+"/text").toByteArray() );
             item0->setPos(settings.value(item+"/pos").toPointF());
             item0->setRotation(settings.value(item+"degree").toDouble());
             item0->setPlainText(QString::fromLocal8Bit( settings.value(item+"/text").toByteArray() ));
@@ -1583,7 +1593,7 @@ void MainWindow::saveProject()
     for (auto item : m_scene->items()){
         QString str = "item" + QString::number(++cnt);
         settings.beginGroup(str);
-        settings.setValue("pos",item->pos());
+        settings.setValue("pos",item->scenePos());
         settings.setValue("type",item->type());
         settings.setValue("degree",item->rotation());
         map_item.insert(item,str);
@@ -1735,4 +1745,14 @@ void MainWindow::loadStyle(const QString &qssFile)
     }
 
     qDebug() << "用时:" << time.elapsed();
+}
+
+//获取文件末尾名称
+QString MainWindow::GetFileLastName(QString strFullPath)
+{
+    QString strPath(strFullPath);
+    strPath.replace('\\','/');
+    int pos=strPath.lastIndexOf('/');
+    int pos2=strPath.lastIndexOf('.');
+    return strPath.mid(pos+1,pos2-pos-1);
 }

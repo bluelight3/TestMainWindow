@@ -57,6 +57,7 @@ void MyView::mousePressEvent(QMouseEvent *event)
         if (selectedItem){
             QPoint mousePos = event->pos();
             selectedItem= dynamic_cast<MyItem*>(itemAt(mousePos));
+            m_selectedItem = selectedItem;
 
             if (selectedItem!= 0 && event->button() == Qt::LeftButton) {
                 oldPos =selectedItem->pos();
@@ -173,7 +174,7 @@ void MyView::mouseReleaseEvent(QMouseEvent *event)
 
 void MyView::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat("myimage/png")){
+    if (event->mimeData()->hasFormat("application/myItem")){
         event->setDropAction(Qt::CopyAction);   // 如果想要设置复制这里和下面函数设置成Qt::CopyAction即可
         event->accept();
     }

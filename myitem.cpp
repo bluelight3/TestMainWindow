@@ -314,8 +314,9 @@ void MyItem::acceptSetToggle(const QString &toggle)
         for (auto item : this->childItems())
             scene()->removeItem(item);
     }
+    int tmpX = -myTextItem->boundingRect().width()/2;
     myTextItem->setParentItem(this);
-    myTextItem->setPos(QPointF(-60,-80));
+    myTextItem->setPos(QPointF(tmpX,-80));
     myTextItem->setZValue(this->zValue()+1);
 
     MyItemWidget* myItemWidget = control.getMyItemWidget();

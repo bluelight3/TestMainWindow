@@ -9,7 +9,9 @@
 // 完成主界面的复制粘贴功能
 // 添加新的TextItem，该Item双击文本不会需要双击两次才能对文字内容进行编辑。
 
-
+// 修复了保存再打开文件时TextItem显示位置不对的bug (原来pos函数如果有parent会使用相对parent坐标)
+// 修复了加入Item会先调用redo的Bug (同时添加了TextItem的撤销/添加功能)
+// 修复了上次更新带来的无法连线Bug  (添加重载type()函数即可)
 
 // ItemWidget 点击确定时 现在会直接关闭窗口
 // 修复了每个图元添加新的注释TextItem时不会删除上一个TextItem的Bug

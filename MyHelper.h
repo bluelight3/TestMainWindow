@@ -545,6 +545,8 @@ public:
         return strPath.mid(pos+1);
     }
 
+
+
     //复制文件
     static bool CopyFile(QString sourceFile, QString targetFile)
     {

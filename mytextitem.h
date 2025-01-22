@@ -20,7 +20,7 @@ protected:
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
-
+    int type() const override { return Type;}
 
 signals:
     void mySignal(QString);

@@ -47,17 +47,17 @@ class AddCommand : public QObject,public QUndoCommand
     Q_OBJECT
 public:
 
-    AddCommand(MyItem * myItem,QGraphicsScene* graphicsScene,QUndoCommand *parent=0);
+    AddCommand(QGraphicsItem * myItem,QGraphicsScene* graphicsScene,QUndoCommand *parent=0);
 
 
     void undo() override;
     void redo() override;
 
 private:
-    MyItem *m_myDiagramItem;
+    QGraphicsItem *m_myItem;
     QGraphicsScene *m_myGraphicsScene;
     QPointF m_initialPosition;
-
+    bool m_bFirstAdded;     //表示第一次Added，置为true 不知道为什么加入图元时会先调用一次redo，此标志位配置第一次加入时不调用redo的实际功能
 
 };
 

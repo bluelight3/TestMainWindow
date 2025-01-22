@@ -81,10 +81,11 @@ bool MoveCommand::mergeWith(const QUndoCommand *command)
 * @author        gl
 * @date          2024-12-29
 **********************************************/
-AddCommand::AddCommand(MyItem *myItem, QGraphicsScene *scene, QUndoCommand *parent)
+AddCommand::AddCommand(QGraphicsItem *myItem, QGraphicsScene *scene, QUndoCommand *parent)
 {
     m_myGraphicsScene = scene;
-    m_myDiagramItem = myItem;
+    m_myItem = myItem;
+    m_bFirstAdded = false;
 
     scene->update();
 //    setText(QObject::tr("Add %1").arg(createCommandString(myDiagramItem, myDiagramItem->scenePos())));
@@ -104,7 +105,7 @@ AddCommand::AddCommand(MyItem *myItem, QGraphicsScene *scene, QUndoCommand *pare
 **********************************************/
 void AddCommand::undo()
 {
-    m_myGraphicsScene->removeItem(m_myDiagramItem);
+    m_myGraphicsScene->removeItem(m_myItem);
     m_myGraphicsScene->update();
 }
 
@@ -119,7 +120,13 @@ void AddCommand::undo()
 **********************************************/
 void AddCommand::redo()
 {
-    m_myGraphicsScene->addItem(m_myDiagramItem);
+    if (!m_bFirstAdded){
+        m_bFirstAdded = true;
+        return;
+    }
+
+
+    m_myGraphicsScene->addItem(m_myItem);
     m_myGraphicsScene->clearSelection();
     m_myGraphicsScene->update();
 }

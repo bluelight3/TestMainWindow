@@ -129,8 +129,10 @@ private:
     QVector<QGraphicsItem*>* qvec_MyItemOnView;  // 在界面上显示的Item
     QTimer* m_timer;        // 界面刷新定时器
 
+
 signals:
     void setMyDragMode(Mode m_myMode);
+    void dataChanged();
 //    void itemSelected(QGraphicsItem *item); // 我们没有自定义scene这里不需要进行转发
 
 public:
@@ -141,6 +143,7 @@ public:
     void initializeProject();
 
     void loadStyle(const QString &qssFile);
+    QString GetFileLastName(QString strFullPath);
 
 public slots:
     void acceptInsertItem();

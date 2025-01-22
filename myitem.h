@@ -33,6 +33,8 @@ public:
     QPointF point() const;
     QRect rect() const;
     MyType diagramType() const { return myDiagramType; }
+    int type() const override { return Type;}
+
     QPointF getLinePoint(){ return isLeft_Right ? point_left : point_right; }
     void setLinePoint(QPointF p);
     bool selectedStatus();
